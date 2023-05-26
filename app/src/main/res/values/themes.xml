@@ -6,4 +6,11 @@
         <item name="android:textColor">@color/contrast</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <style name="Theme.RoleWorld.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/window_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_anim</item>
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme.RoleWorld</item>
+    </style>
 </resources>
