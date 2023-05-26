@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.RoleWorld" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/window_bg</item>
+        <item name="android:colorPrimaryDark">@color/window_bg</item>
+        <item name="android:textColor">@color/contrast</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

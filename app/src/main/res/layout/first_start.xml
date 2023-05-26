@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:src="@drawable/first_start_bg2"
+        android:id="@+id/preview_background"
+        android:scaleType="center"/>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:src="@drawable/first_start_bg"
+        android:id="@+id/preview"
+        android:scaleType="center"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to RoleWorld"
+        android:textSize="25sp"
+        android:layout_centerInParent="true"
+        android:fontFamily="sans-serif"
+        android:textFontWeight="500"/>
+</RelativeLayout>
