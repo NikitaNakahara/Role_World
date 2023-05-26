@@ -15,17 +15,20 @@ class PreviewAnimator(
     private var foregroundImageView: ImageView? = foregroundImageView
     private var backgroundImageView: ImageView? = backgroundImageView
     private var images: ArrayList<Bitmap>? = images
-    private var duration = 10000
+    private var duration = 5000
+    private var delay = 5000
     private var displayedImageIndex = 0
 
     public fun start() {
         if (images?.size!! <= 1) return
 
+        foregroundImageView?.setImageBitmap(images!![0])
+        backgroundImageView?.setImageBitmap(images!![1])
+
         val animator = ValueAnimator()
-        animator.setFloatValues(100.0f, 0.0f)
+        animator.setFloatValues(1.0f, 0.0f)
         animator.duration = duration.toLong()
-        animator.startDelay = 2000
-        animator.repeatCount = ValueAnimator.INFINITE
+        animator.startDelay = delay.toLong()
 
         animator.addUpdateListener {
             foregroundImageView?.alpha = it.animatedValue as Float
@@ -35,15 +38,20 @@ class PreviewAnimator(
             object: AnimatorListener {
                 override fun onAnimationStart(p0: Animator) {}
 
-                override fun onAnimationEnd(p0: Animator) {}
+                override fun onAnimationEnd(p0: Animator) {
+                    if (images?.size == 2) {
+                        swipeImages()
+                    } else {
+                        shiftImages()
+                    }
+
+                    animator.startDelay = delay.toLong()
+                    animator.start()
+                }
 
                 override fun onAnimationCancel(p0: Animator) {}
 
-                override fun onAnimationRepeat(p0: Animator) {
-                    if (images?.size == 2) {
-                        swipeImages()
-                    }
-                }
+                override fun onAnimationRepeat(p0: Animator) {}
             }
         )
 
@@ -54,5 +62,17 @@ class PreviewAnimator(
         val foregroundBitmap = (foregroundImageView?.drawable as BitmapDrawable).bitmap
         foregroundImageView?.setImageBitmap((backgroundImageView?.drawable as BitmapDrawable).bitmap)
         backgroundImageView?.setImageBitmap(foregroundBitmap)
+    }
+
+    private fun shiftImages() {
+        val firstImage = images!![0]
+        for (i in 1 until images!!.size) {
+            images!![i - 1] = images!![i]
+        }
+        images!![images!!.size - 1] = firstImage
+
+        foregroundImageView?.setImageBitmap(images!![0])
+        foregroundImageView?.alpha = 1.0f
+        backgroundImageView?.setImageBitmap(images!![1])
     }
 }

@@ -8,14 +8,14 @@
         android:layout_centerInParent="true"
         android:src="@drawable/first_start_bg2"
         android:id="@+id/preview_background"
-        android:scaleType="center"/>
+        android:scaleType="centerCrop"/>
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:src="@drawable/first_start_bg"
         android:id="@+id/preview"
-        android:scaleType="center"/>
+        android:scaleType="centerCrop"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -25,4 +25,47 @@
         android:layout_centerInParent="true"
         android:fontFamily="sans-serif"
         android:textFontWeight="500"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="check connection"
+            android:textSize="15sp"
+            android:layout_marginEnd="10dp"/>
+        <ProgressBar
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:indeterminateDrawable="@drawable/progress_bar"
+            android:indeterminateOnly="true" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:gravity="center"
+        android:padding="5dp"
+        android:background="@drawable/select_lang_bg">
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/eng_lang_icon"/>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/fall_list_open_btn"
+            />
+    </LinearLayout>
 </RelativeLayout>

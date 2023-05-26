@@ -15,6 +15,7 @@ class FirstStartActivity : Activity() {
         val images = ArrayList<Bitmap>()
         images.add((resources.getDrawable(R.drawable.first_start_bg) as BitmapDrawable).bitmap)
         images.add((resources.getDrawable(R.drawable.first_start_bg2) as BitmapDrawable).bitmap)
+        images.add((resources.getDrawable(R.drawable.first_start_bg3) as BitmapDrawable).bitmap)
 
         val previewAnimator = PreviewAnimator(findViewById(R.id.preview), findViewById(R.id.preview_background), images)
         previewAnimator.start()
