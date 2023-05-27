@@ -65,6 +65,9 @@ class FirstStartActivity : Activity() {
 
     private fun startRegistration() {
         findViewById<ImageView>(R.id.preview).setOnClickListener(null)
+
+        val controller = AuthController(findViewById(R.id.auth_layout), this)
+        controller.start()
     }
 
     private fun initLangSelector() {

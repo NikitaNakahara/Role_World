@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -20,14 +21,117 @@
         android:src="@drawable/first_start_bg" />
 
     <TextView
+        android:id="@+id/welcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/welcome_to_roleworld"
-        android:textSize="25sp"
         android:layout_centerInParent="true"
         android:fontFamily="sans-serif"
+        android:text="@string/welcome_to_roleworld"
         android:textFontWeight="500"
-        android:id="@+id/welcome"/>
+        android:textSize="25sp"/>
+
+    <RelativeLayout
+        android:id="@+id/auth_layout"
+        android:layout_width="250dp"
+        android:layout_height="350dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/auth_bg"
+        android:paddingStart="25dp"
+        android:paddingTop="25dp"
+        android:paddingEnd="25dp"
+        android:visibility="gone"
+        android:scaleX="0.0"
+        android:scaleY="0.0">
+        <LinearLayout
+            android:id="@+id/sign_up_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="#00000000"
+                android:hint="@string/input_nickname_hint"
+                android:textColorHint="#ccc" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="15dp"
+                android:background="#00000000"
+                android:hint="@string/input_email_hint"
+                android:textColorHint="#ccc" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="15dp"
+                android:background="#00000000"
+                android:hint="@string/input_password_hint"
+                android:textColorHint="#ccc" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="15dp"
+                android:background="#00000000"
+                android:hint="@string/input_repeat_password_hint"
+                android:textColorHint="#ccc" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sign_in_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:alpha="0.0"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="15dp"
+                android:background="#00000000"
+                android:hint="@string/input_email_hint"
+                android:textColorHint="#ccc" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="15dp"
+                android:background="#00000000"
+                android:hint="@string/input_password_hint"
+                android:textColorHint="#ccc" />
+        </LinearLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:background="#00000000"
+            android:text="@string/continue_btn" />
+
+        <LinearLayout
+            android:id="@+id/switch_auth_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/switch_auth_mode_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_in"/>
+
+            <ImageView
+                android:layout_width="17dp"
+                android:layout_height="17dp"
+                android:layout_marginStart="5dp"
+                android:src="@drawable/switch_auth_mode_btn"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"

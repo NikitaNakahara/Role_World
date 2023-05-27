@@ -3,4 +3,11 @@
     <string name="check_connection">check connection</string>
     <string name="welcome_to_roleworld">Welcome to RoleWorld</string>
     <string name="tap_to_continue">tap to continue</string>
+    <string name="input_nickname_hint">name</string>
+    <string name="input_email_hint">email</string>
+    <string name="input_password_hint">password</string>
+    <string name="input_repeat_password_hint">repeat password</string>
+    <string name="continue_btn">continue</string>
+    <string name="sign_in">sign in</string>
+    <string name="sign_up">sign up</string>
 </resources>
