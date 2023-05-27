@@ -2,4 +2,5 @@
 <resources>
     <string name="check_connection">check connection</string>
     <string name="welcome_to_roleworld">Welcome to RoleWorld</string>
+    <string name="tap_to_continue">tap to continue</string>
 </resources>

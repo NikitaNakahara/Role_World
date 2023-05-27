@@ -10,14 +10,15 @@ import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import java.util.Locale
 
 
-
-
-
 class FirstStartActivity : Activity() {
+    var network: Network? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -32,6 +33,38 @@ class FirstStartActivity : Activity() {
         previewAnimator.start()
 
         initLangSelector()
+        initNetwork()
+    }
+
+    private fun initNetwork() {
+        network = Network()
+        network?.setNetworkCallback(object: Network.NetworkCallback() {
+            override fun onConnected() {
+                runOnUiThread {
+                    findViewById<LinearLayout>(R.id.check_conn_indicator).visibility = View.GONE
+                    findViewById<TextView>(R.id.preview_continue).visibility = View.VISIBLE
+
+                    initContinueIndicator()
+                }
+            }
+        })
+        network?.run()
+    }
+
+    private fun initContinueIndicator() {
+        val indicator = findViewById<TextView>(R.id.preview_continue)
+        val animator = TextIndicatorAnimator(indicator)
+        animator.start()
+
+        findViewById<ImageView>(R.id.preview).setOnClickListener {
+            findViewById<TextView>(R.id.welcome).visibility = View.GONE
+
+            startRegistration()
+        }
+    }
+
+    private fun startRegistration() {
+        findViewById<ImageView>(R.id.preview).setOnClickListener(null)
     }
 
     private fun initLangSelector() {
