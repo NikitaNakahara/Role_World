@@ -50,4 +50,8 @@ class TextIndicatorAnimator(view: TextView) {
     public fun start() {
         disappearanceAnimator?.start()
     }
+
+    public fun stop() {
+        disappearanceAnimator?.end()
+    }
 }

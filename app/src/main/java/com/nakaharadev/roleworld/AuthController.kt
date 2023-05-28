@@ -63,9 +63,9 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
                 map["email"] = (signInLayout.getChildAt(0) as EditText).text.toString()
                 map["password"] = (signInLayout.getChildAt(1) as EditText).text.toString()
             } else {
-                map["nickname"] = (signInLayout.getChildAt(0) as EditText).text.toString()
-                map["email"] = (signInLayout.getChildAt(1) as EditText).text.toString()
-                map["password"] = (signInLayout.getChildAt(2) as EditText).text.toString()
+                map["nickname"] = (signUpLayout.getChildAt(0) as EditText).text.toString()
+                map["email"] = (signUpLayout.getChildAt(1) as EditText).text.toString()
+                map["password"] = (signUpLayout.getChildAt(2) as EditText).text.toString()
             }
 
             authCallback?.onContinue(authMode, map)
@@ -188,7 +188,7 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
     private fun initChangeModeTextViewAnim() {
         disappearanceChangeModeTextViewAnim = ObjectAnimator.ofFloat(changeModeTextView, "alpha", 1.0f, 0.0f)
         disappearanceChangeModeTextViewAnim?.duration = 200
-        disappearanceSignUpAnim?.addListener(object: AnimatorListener {
+        disappearanceChangeModeTextViewAnim?.addListener(object: AnimatorListener {
             override fun onAnimationStart(p0: Animator) {}
 
             override fun onAnimationEnd(p0: Animator) {
@@ -199,7 +199,6 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
                 }
 
                 appearanceChangeModeTextViewAnim?.start()
-                Toast.makeText(context, "mode changed", Toast.LENGTH_SHORT).show()
             }
 
             override fun onAnimationCancel(p0: Animator) {}

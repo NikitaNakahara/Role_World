@@ -53,7 +53,8 @@
                 android:layout_height="30dp"
                 android:background="#00000000"
                 android:hint="@string/input_nickname_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -61,7 +62,8 @@
                 android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:hint="@string/input_email_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -69,7 +71,8 @@
                 android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:hint="@string/input_password_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -77,7 +80,8 @@
                 android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:hint="@string/input_repeat_password_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
         </LinearLayout>
 
         <LinearLayout
@@ -94,7 +98,8 @@
                 android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:hint="@string/input_email_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -102,7 +107,8 @@
                 android:layout_marginTop="15dp"
                 android:background="#00000000"
                 android:hint="@string/input_password_hint"
-                android:textColorHint="#ccc" />
+                android:textColorHint="#ccc"
+                android:singleLine="true"/>
         </LinearLayout>
 
         <Button

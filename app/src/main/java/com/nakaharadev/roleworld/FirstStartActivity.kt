@@ -57,7 +57,10 @@ class FirstStartActivity : Activity() {
         animator.start()
 
         findViewById<ImageView>(R.id.preview).setOnClickListener {
+            animator.stop()
+
             findViewById<TextView>(R.id.welcome).visibility = View.GONE
+            indicator.visibility = View.GONE
 
             startRegistration()
         }
