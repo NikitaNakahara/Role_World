@@ -3,6 +3,7 @@ package com.nakaharadev.roleworld
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -13,11 +14,19 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
+import org.json.JSONObject
+import java.io.File
+import java.io.FileWriter
 import java.util.Locale
 
 
 class FirstStartActivity : Activity() {
     var network: Network? = null
+
+    var authFailed = false
+    var responseIsGet = false
+    var responseMsg = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +56,17 @@ class FirstStartActivity : Activity() {
                     initContinueIndicator()
                 }
             }
+
+            override fun onGetMessage(msg: String) {
+                val json = JSONObject(msg)
+                if (json["state"] == "failed") {
+                    authFailed = true
+                } else {
+                    responseMsg = msg
+                }
+
+                responseIsGet = true
+            }
         })
         network?.run()
     }
@@ -62,14 +82,83 @@ class FirstStartActivity : Activity() {
             findViewById<TextView>(R.id.welcome).visibility = View.GONE
             indicator.visibility = View.GONE
 
-            startRegistration()
+            startAuth()
         }
     }
 
-    private fun startRegistration() {
+    private fun startAuth() {
         findViewById<ImageView>(R.id.preview).setOnClickListener(null)
 
         val controller = AuthController(findViewById(R.id.auth_layout), this)
+        controller.setCallback(object: AuthController.AuthCallback() {
+            override fun onContinue(mode: Int, data: HashMap<String, String>) {
+                if (data["state"] == "success") {
+                    val json = (data as Map<*, *>?)?.let { JSONObject(it) }
+                    json?.put("type", "auth")
+                    if (mode == AuthController.SIGN_IN) {
+                        json?.put("mode", "sign_in")
+                    } else {
+                        json?.put("mode", "sign_up")
+                    }
+
+                    network?.sendMsg(json.toString())
+
+                    Thread {
+                        while (!responseIsGet);
+
+                        if (authFailed) {
+                            runOnUiThread {
+                                findViewById<RelativeLayout>(R.id.auth_layout).setBackgroundResource(R.drawable.failed_auth_bg)
+
+                                val failMsgView = findViewById<TextView>(R.id.fail_auth_msg)
+                                failMsgView.visibility = View.VISIBLE
+
+                                if (mode == AuthController.SIGN_IN) {
+                                    failMsgView.setText(R.string.sign_in_fail)
+                                } else {
+                                    failMsgView.setText(R.string.user_already_exists)
+                                }
+                            }
+                        } else {
+                            val json = JSONObject(responseMsg)
+                            UserData.ID = json.getString("id")
+                            if (mode == AuthController.SIGN_IN) {
+                                UserData.NICKNAME = json["nickname"] as String
+                            } else {
+                                UserData.NICKNAME = data["nickname"] as String
+                            }
+
+                            UserData.PASSWORD = data["password"] as String
+                            UserData.EMAIL = data["email"] as String
+                            UserData.LANG = if (Languages.activeLanguage == Languages.RU) "ru" else "en"
+
+                            writeConfig()
+
+                            startActivity(Intent(this@FirstStartActivity, LauncherActivity::class.java))
+                            finish()
+                        }
+                    }.start()
+                } else if (data["state"] == "field is empty") {
+                    runOnUiThread {
+                        findViewById<RelativeLayout>(R.id.auth_layout).setBackgroundResource(R.drawable.failed_auth_bg)
+
+                        val failMsgView = findViewById<TextView>(R.id.fail_auth_msg)
+                        failMsgView.visibility = View.VISIBLE
+
+                        failMsgView.setText(R.string.empty_field)
+                    }
+                } else {
+                    runOnUiThread {
+                        findViewById<RelativeLayout>(R.id.auth_layout).setBackgroundResource(R.drawable.failed_auth_bg)
+
+                        val failMsgView = findViewById<TextView>(R.id.fail_auth_msg)
+                        failMsgView.visibility = View.VISIBLE
+
+                        failMsgView.setText(R.string.passwords_isnt_equals)
+                    }
+                }
+            }
+        })
         controller.start()
     }
 
@@ -153,5 +242,19 @@ class FirstStartActivity : Activity() {
         configuration.locale = locale
         baseContext.resources.updateConfiguration(configuration, null)
         recreate()
+    }
+
+    private fun writeConfig() {
+        val file = File(filesDir.path + "/main.conf")
+
+        val json = JSONObject()
+        json.put("nickname", UserData.NICKNAME)
+        json.put("email", UserData.EMAIL)
+        json.put("password", UserData.PASSWORD)
+        json.put("id", UserData.ID)
+        json.put("lang", UserData.LANG)
+
+        val writer = FileWriter(file)
+        writer.write(json.toString())
     }
 }

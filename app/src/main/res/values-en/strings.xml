@@ -10,4 +10,8 @@
     <string name="continue_btn">continue</string>
     <string name="sign_in">sign in</string>
     <string name="sign_up">sign up</string>
+    <string name="user_already_exists">user already exists</string>
+    <string name="sign_in_fail">email or password incorrect</string>
+    <string name="passwords_isnt_equals">passwords isn\'t equals</string>
+    <string name="empty_field">empty field</string>
 </resources>

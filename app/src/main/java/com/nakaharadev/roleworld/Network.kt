@@ -26,15 +26,46 @@ class Network {
 
     public fun run() {
         networkThread = Thread {
-            createConnection()
-            createIOStreams()
+            do {
+                createConnection()
+                createIOStreams()
 
-            networkCallback?.onConnected()
+                networkCallback?.onConnected()
+
+
+                while (socket != null) {
+                    try {
+                        val msg = input?.readUTF()
+                        if (msg != null) {
+                            networkCallback?.onGetMessage(msg)
+                        }
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                        socket = null
+                        networkCallback?.onDisconnected()
+                    }
+                }
+            } while (true)
         }
         networkThread?.start()
     }
 
+    public fun sendMsg(msg: String) {
+        Thread {
+            try {
+                output?.writeUTF(msg)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                socket = null
+                networkCallback?.onDisconnected()
+            }
+        }.start()
+    }
+
     public fun close() {
+        input?.close()
+        output?.close()
+        socket?.close()
         networkThread?.interrupt()
     }
 
@@ -61,12 +92,9 @@ class Network {
         }
     }
 
-    private fun createGetMsgLoop() {
-
-    }
-
     public abstract class NetworkCallback {
         public abstract fun onConnected()
+        public abstract fun onGetMessage(msg: String)
         public fun onDisconnected() {}
     }
 }

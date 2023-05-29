@@ -10,4 +10,8 @@
     <string name="continue_btn">продолжить</string>
     <string name="sign_in">есть аккаунт</string>
     <string name="sign_up">нет аккаунта</string>
+    <string name="user_already_exists">пользователь уже существует</string>
+    <string name="sign_in_fail">неверный логин или пароль</string>
+    <string name="passwords_isnt_equals">пароли не совпадают</string>
+    <string name="empty_field">пустое поле</string>
 </resources>

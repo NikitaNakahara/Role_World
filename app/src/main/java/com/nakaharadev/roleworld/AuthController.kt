@@ -15,6 +15,11 @@ import android.widget.TextView
 import android.widget.Toast
 
 class AuthController(private val layout: RelativeLayout, private val context: Context) {
+    companion object {
+        public val SIGN_IN = 0
+        public val SIGN_UP = 1
+    }
+
     private var authCallback: AuthCallback? = null
 
     private val signInLayout = layout.getChildAt(1) as LinearLayout
@@ -36,8 +41,6 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
     private var openAuthAnimX: ObjectAnimator? = null
     private var openAuthAnimY: ObjectAnimator? = null
 
-    private val SIGN_IN = 0
-    private val SIGN_UP = 1
     private var authMode = SIGN_UP
 
     init {
@@ -62,10 +65,31 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
             if (authMode == SIGN_IN) {
                 map["email"] = (signInLayout.getChildAt(0) as EditText).text.toString()
                 map["password"] = (signInLayout.getChildAt(1) as EditText).text.toString()
+
+                if (
+                    (map["email"] as String).matches(Regex("")) ||
+                    (map["password"] as String).matches(Regex(""))
+                ) {
+                    map["state"] = "field is empty"
+                } else {
+                    map["state"] = "success"
+                }
             } else {
                 map["nickname"] = (signUpLayout.getChildAt(0) as EditText).text.toString()
                 map["email"] = (signUpLayout.getChildAt(1) as EditText).text.toString()
                 map["password"] = (signUpLayout.getChildAt(2) as EditText).text.toString()
+
+                if (
+                    (map["email"] as String).matches(Regex("")) ||
+                    (map["password"] as String).matches(Regex("")) ||
+                    (map["nickname"] as String).matches(Regex(""))
+                ) {
+                    map["state"] = "field is empty"
+                } else if ((signUpLayout.getChildAt(2) as EditText).text.toString() != (signUpLayout.getChildAt(3) as EditText).text.toString()) {
+                    map["state"] = "passwords isn't equals"
+                } else {
+                    map["state"] = "success"
+                }
             }
 
             authCallback?.onContinue(authMode, map)
@@ -120,10 +144,9 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
         resizeToSignUpAnim?.setIntValues(250, 350)
         resizeToSignUpAnim?.duration = 400
         resizeToSignUpAnim?.addUpdateListener {
-            val params = RelativeLayout.LayoutParams(
+            val params = LinearLayout.LayoutParams(
                 dpToPx(250), dpToPx(it.animatedValue as Int)
             )
-            params.addRule(RelativeLayout.CENTER_IN_PARENT)
             layout.layoutParams = params
         }
 
@@ -131,10 +154,9 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
         resizeToSignInAnim?.setIntValues(350, 250)
         resizeToSignInAnim?.duration = 400
         resizeToSignInAnim?.addUpdateListener {
-            val params = RelativeLayout.LayoutParams(
+            val params = LinearLayout.LayoutParams(
                 dpToPx(250), dpToPx(it.animatedValue as Int)
             )
-            params.addRule(RelativeLayout.CENTER_IN_PARENT)
             layout.layoutParams = params
         }
     }
@@ -218,7 +240,7 @@ class AuthController(private val layout: RelativeLayout, private val context: Co
     }
 
     public abstract class AuthCallback {
-        public abstract fun onChangeMode(mode: Int)
+        public open fun onChangeMode(mode: Int) {}
         public abstract fun onContinue(mode: Int, data: HashMap<String, String>)
     }
 }
