@@ -16,7 +16,9 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import org.json.JSONObject
+import java.io.DataOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
 import java.util.Locale
 
@@ -246,6 +248,7 @@ class FirstStartActivity : Activity() {
 
     private fun writeConfig() {
         val file = File(filesDir.path + "/main.conf")
+        file.createNewFile()
 
         val json = JSONObject()
         json.put("nickname", UserData.NICKNAME)
@@ -254,7 +257,8 @@ class FirstStartActivity : Activity() {
         json.put("id", UserData.ID)
         json.put("lang", UserData.LANG)
 
-        val writer = FileWriter(file)
-        writer.write(json.toString())
+        val output = DataOutputStream(FileOutputStream(file))
+        output.writeUTF(json.toString())
+        output.flush()
     }
 }
