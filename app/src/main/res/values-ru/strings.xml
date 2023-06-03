@@ -14,4 +14,6 @@
     <string name="sign_in_fail">неверный логин или пароль</string>
     <string name="passwords_isnt_equals">пароли не совпадают</string>
     <string name="empty_field">пустое поле</string>
+    <string name="characters">персонажи</string>
+    <string name="worlds">миры</string>
 </resources>

@@ -14,4 +14,6 @@
     <string name="sign_in_fail">email or password incorrect</string>
     <string name="passwords_isnt_equals">passwords isn\'t equals</string>
     <string name="empty_field">empty field</string>
+    <string name="characters">characters</string>
+    <string name="worlds">worlds</string>
 </resources>

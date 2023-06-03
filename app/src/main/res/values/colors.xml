@@ -5,4 +5,7 @@
 
     <color name="window_bg">#121212</color>
     <color name="contrast">#FFFFFF</color>
+    <color name="gray_bg">#313233</color>
+    <color name="gray_text">#ccc</color>
+    <color name="main_ui">#00ffdc</color>
 </resources>
