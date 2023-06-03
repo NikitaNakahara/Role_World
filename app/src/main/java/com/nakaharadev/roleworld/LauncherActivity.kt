@@ -2,14 +2,13 @@ package com.nakaharadev.roleworld
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.widget.Toast
 import org.json.JSONObject
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileReader
-import java.lang.StringBuilder
 
 class LauncherActivity : Activity() {
     private val CONFIG_PATH = "/main.conf"
@@ -43,5 +42,14 @@ class LauncherActivity : Activity() {
         UserData.ID = json["id"] as String
         UserData.PASSWORD = json["password"] as String
         UserData.LANG = json["lang"] as String
+        UserData.AVATAR = loadAvatar(json["avatar"] as String)
+    }
+
+    private fun loadAvatar(name: String): Bitmap? {
+        if (name == "null") return null
+
+        val image = File(filesDir.path + name)
+        val bmOptions = BitmapFactory.Options()
+        return BitmapFactory.decodeFile(image.absolutePath, bmOptions)
     }
 }

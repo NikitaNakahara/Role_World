@@ -16,4 +16,5 @@
     <string name="empty_field">empty field</string>
     <string name="characters">characters</string>
     <string name="worlds">worlds</string>
+    <string name="log_out">log out</string>
 </resources>

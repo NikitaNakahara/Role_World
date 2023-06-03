@@ -256,6 +256,7 @@ class FirstStartActivity : Activity() {
         json.put("password", UserData.PASSWORD)
         json.put("id", UserData.ID)
         json.put("lang", UserData.LANG)
+        json.put("avatar", "null")
 
         val output = DataOutputStream(FileOutputStream(file))
         output.writeUTF(json.toString())

@@ -16,4 +16,5 @@
     <string name="empty_field">пустое поле</string>
     <string name="characters">персонажи</string>
     <string name="worlds">миры</string>
+    <string name="log_out">выйти из аккаунта</string>
 </resources>

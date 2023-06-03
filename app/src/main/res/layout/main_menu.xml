@@ -51,20 +51,23 @@
         android:translationX="-301dp">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:paddingHorizontal="10dp"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="10dp"
+            android:paddingVertical="15dp">
             <com.google.android.material.imageview.ShapeableImageView
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/default_user_avatar"
-                app:shapeAppearance="@style/RoundImageViewShape"/>
+                android:id="@+id/app_menu_user_avatar"
+                app:shapeAppearance="@style/RoundImageViewShape"
+                android:scaleType="centerCrop"/>
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="80dp"
-                android:layout_centerVertical="true"
+                android:layout_alignParentTop="true"
                 android:orientation="vertical">
                 <TextView
                     android:layout_width="wrap_content"
