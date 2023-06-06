@@ -4,6 +4,7 @@ import android.R.attr.label
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -11,18 +12,18 @@ import android.provider.MediaStore
 import android.text.SpannableString
 import android.text.style.UnderlineSpan
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.util.Base64
 
 
 class AppActivity : Activity() {
@@ -30,10 +31,32 @@ class AppActivity : Activity() {
 
     private val GET_USER_AVATAR = 0
 
+    private var authorized = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         network = Network()
+        network?.setNetworkCallback(object : Network.NetworkCallback {
+            override fun onConnected() {}
+
+            override fun onGetMessage(msg: Message) {
+                val json = JSONObject(msg.toString())
+
+                if (json.getJSONObject("data")["state"] as String == "success") {
+                    if (json["id"] as String == UserData.ID) {
+                        authorized = true
+                    }
+                }
+            }
+
+            override fun onSendMessage(msg: Message) {
+                runOnUiThread { Toast.makeText(this@AppActivity, msg.toString(), Toast.LENGTH_SHORT).show() }
+            }
+        })
+        network?.run()
+
+        authUser()
 
         initMainAppView()
     }
@@ -50,6 +73,22 @@ class AppActivity : Activity() {
                 }
             }
         }
+    }
+
+    private fun authUser() {
+        val msg = Message()
+        msg.setRequestType("auth")
+        msg.setRequestMode("sign_in")
+
+        val msgData = JSONObject()
+        msgData.put("email", UserData.EMAIL)
+        msgData.put("password", UserData.PASSWORD)
+
+        msg.setData(msgData)
+
+        //Toast.makeText(this, msg.toString(), Toast.LENGTH_SHORT).show()
+
+        network?.sendMsg(msg)
     }
 
     private fun initMainAppView() {
@@ -82,6 +121,7 @@ class AppActivity : Activity() {
         findViewById<TextView>(R.id.app_menu_user_email).text = UserData.EMAIL
 
         findViewById<ImageView>(R.id.user_profile_settings).setOnClickListener {
+            Menu.hiddenMenu()
             initUserProfileSettings()
         }
     }
@@ -103,46 +143,64 @@ class AppActivity : Activity() {
         findViewById<EditText>(R.id.settings_user_email).setText(UserData.EMAIL)
         findViewById<TextView>(R.id.settings_user_id).text = UserData.ID
 
-        var nicknameIsEdit = false
-        var emailIsEdit = false
-
         findViewById<ImageView>(R.id.settings_edit_nickname).setOnClickListener {
-            if (!nicknameIsEdit) {
-                nicknameIsEdit = true
+            val edit = findViewById<EditText>(R.id.settings_nickname_input)
 
-                (it as ImageView).setImageResource(R.drawable.ok_icon)
-                val edit = findViewById<EditText>(R.id.settings_nickname_input)
-                edit.isFocusable = true
-                edit.isFocusableInTouchMode = true
-                edit.isClickable = true
-            } else {
-                nicknameIsEdit = false
+            it.visibility = View.GONE
 
-                (it as ImageView).setImageResource(R.drawable.edit_btn_icon)
-                val edit = findViewById<EditText>(R.id.settings_nickname_input)
-                edit.isFocusable = false
-                edit.isFocusableInTouchMode = false
-                edit.isClickable = false
+            edit.isFocusable = true
+            edit.isFocusableInTouchMode = true
+            edit.isClickable = true
+
+            edit.requestFocus()
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+
+            edit.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    UserData.NICKNAME = v?.text?.toString().toString()
+
+                    it.visibility = View.VISIBLE
+                    edit.isFocusable = false
+                    edit.isFocusableInTouchMode = false
+                    edit.isClickable = false
+
+                    imm.hideSoftInputFromWindow(edit.windowToken, 0)
+
+                    return@setOnEditorActionListener true
+                }
+
+                return@setOnEditorActionListener false
             }
         }
 
         findViewById<ImageView>(R.id.settings_edit_email).setOnClickListener {
-            if (!emailIsEdit) {
-                emailIsEdit = true
+            val edit = findViewById<EditText>(R.id.settings_user_email)
 
-                (it as ImageView).setImageResource(R.drawable.ok_icon)
-                val edit = findViewById<EditText>(R.id.settings_user_email)
-                edit.isFocusable = true
-                edit.isFocusableInTouchMode = true
-                edit.isClickable = true
-            } else {
-                emailIsEdit = false
+            it.visibility = View.GONE
+            edit.isFocusable = true
+            edit.isFocusableInTouchMode = true
+            edit.isClickable = true
 
-                (it as ImageView).setImageResource(R.drawable.edit_btn_icon)
-                val edit = findViewById<EditText>(R.id.settings_user_email)
-                edit.isFocusable = false
-                edit.isFocusableInTouchMode = false
-                edit.isClickable = false
+            edit.requestFocus()
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+
+            edit.setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    UserData.EMAIL = v?.text?.toString().toString()
+
+                    it.visibility = View.VISIBLE
+                    edit.isFocusable = false
+                    edit.isFocusableInTouchMode = false
+                    edit.isClickable = false
+
+                    imm.hideSoftInputFromWindow(edit.windowToken, 0)
+
+                    return@setOnEditorActionListener true
+                }
+
+                return@setOnEditorActionListener false
             }
         }
 

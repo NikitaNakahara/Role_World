@@ -46,15 +46,15 @@
                     android:id="@+id/settings_user_avatar"
                     android:scaleType="centerCrop"/>
                 <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:src="@drawable/edit_btn_icon"
                     android:background="@drawable/edit_btn"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentEnd="true"
                     android:layout_marginBottom="5dp"
                     android:layout_marginEnd="5dp"
-                    android:padding="5dp"
+                    android:padding="7dp"
                     android:tint="@color/contrast"
                     android:tintMode="src_atop"
                     android:id="@+id/settings_edit_user_avatar"/>
@@ -79,7 +79,9 @@
                         android:textSize="18sp"
                         android:focusable="false"
                         android:focusableInTouchMode="false"
-                        android:clickable="false"/>
+                        android:clickable="false"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"/>
                     <ImageView
                         android:layout_width="19dp"
                         android:layout_height="19dp"
@@ -103,7 +105,9 @@
                         android:textColor="@color/gray_text"
                         android:focusable="false"
                         android:focusableInTouchMode="false"
-                        android:clickable="false"/>
+                        android:clickable="false"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"/>
                     <ImageView
                         android:layout_width="19dp"
                         android:layout_height="19dp"

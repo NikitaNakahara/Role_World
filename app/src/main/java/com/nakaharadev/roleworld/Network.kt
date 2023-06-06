@@ -1,8 +1,5 @@
 package com.nakaharadev.roleworld
 
-import android.annotation.SuppressLint
-import android.os.Handler
-import android.os.Message
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -20,6 +17,27 @@ class Network {
 
     private var networkThread: Thread? = null
 
+    private var isConnected = false
+
+    private val messageQueueController = MessageQueueController()
+
+    init {
+        messageQueueController.setCallback(object: MessageQueueController.MessageQueueControllerCallback {
+            override fun onMessageReadyToSend(msg: Message) {
+                try {
+                    output?.writeUTF(msg.toString())
+                    output?.flush()
+
+                    networkCallback?.onSendMessage(msg)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        })
+
+        messageQueueController.runControllerLoop()
+    }
+
     public fun setNetworkCallback(callback: NetworkCallback) {
         networkCallback = callback
     }
@@ -27,6 +45,9 @@ class Network {
     public fun run() {
         networkThread = Thread {
             do {
+                isConnected = false
+                messageQueueController.setNetworkIsConnected(false)
+
                 createConnection()
                 createIOStreams()
 
@@ -37,7 +58,7 @@ class Network {
                     try {
                         val msg = input?.readUTF()
                         if (msg != null) {
-                            networkCallback?.onGetMessage(msg)
+                            networkCallback?.onGetMessage(Message(msg))
                         }
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -50,16 +71,8 @@ class Network {
         networkThread?.start()
     }
 
-    public fun sendMsg(msg: String) {
-        Thread {
-            try {
-                output?.writeUTF(msg)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                socket = null
-                networkCallback?.onDisconnected()
-            }
-        }.start()
+    public fun sendMsg(msg: Message) {
+        messageQueueController.addMessage(msg)
     }
 
     public fun close() {
@@ -84,6 +97,9 @@ class Network {
         try {
             input = DataInputStream(socket?.getInputStream())
             output = DataOutputStream(socket?.getOutputStream())
+
+            isConnected = true
+            messageQueueController.setNetworkIsConnected(true)
         } catch (e: IOException) {
             e.printStackTrace()
 
@@ -92,9 +108,10 @@ class Network {
         }
     }
 
-    public abstract class NetworkCallback {
-        public abstract fun onConnected()
-        public abstract fun onGetMessage(msg: String)
+    public interface NetworkCallback {
+        public fun onConnected()
+        public fun onGetMessage(msg: Message)
+        public fun onSendMessage(msg: Message) {}
         public fun onDisconnected() {}
     }
 }

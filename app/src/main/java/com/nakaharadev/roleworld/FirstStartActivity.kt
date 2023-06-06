@@ -14,12 +14,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import org.json.JSONObject
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FileWriter
 import java.util.Locale
 
 
@@ -28,7 +26,7 @@ class FirstStartActivity : Activity() {
 
     var authFailed = false
     var responseIsGet = false
-    var responseMsg = ""
+    var responseMsg: Message? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +47,7 @@ class FirstStartActivity : Activity() {
 
     private fun initNetwork() {
         network = Network()
-        network?.setNetworkCallback(object: Network.NetworkCallback() {
+        network?.setNetworkCallback(object: Network.NetworkCallback {
             override fun onConnected() {
                 runOnUiThread {
                     findViewById<LinearLayout>(R.id.check_conn_indicator).visibility = View.GONE
@@ -59,9 +57,9 @@ class FirstStartActivity : Activity() {
                 }
             }
 
-            override fun onGetMessage(msg: String) {
-                val json = JSONObject(msg)
-                if (json["state"] == "failed") {
+            override fun onGetMessage(msg: Message) {
+                val json = JSONObject(msg.toString())
+                if (json.getJSONObject("data")["state"] == "failed") {
                     authFailed = true
                 } else {
                     responseMsg = msg
@@ -95,15 +93,22 @@ class FirstStartActivity : Activity() {
         controller.setCallback(object: AuthController.AuthCallback() {
             override fun onContinue(mode: Int, data: HashMap<String, String>) {
                 if (data["state"] == "success") {
-                    val json = (data as Map<*, *>?)?.let { JSONObject(it) }
-                    json?.put("type", "auth")
+                    val message = Message()
+
+                    message.setRequestType("auth")
                     if (mode == AuthController.SIGN_IN) {
-                        json?.put("mode", "sign_in")
+                        message.setRequestMode("sign_in")
                     } else {
-                        json?.put("mode", "sign_up")
+                        message.setRequestMode("sign_up")
                     }
 
-                    network?.sendMsg(json.toString())
+                    val json = (data as Map<*, *>?)?.let { JSONObject(it) }
+                    if (json != null) {
+                        message.setData(json)
+                    }
+
+                    network?.sendMsg(message)
+
 
                     Thread {
                         while (!responseIsGet);
@@ -122,10 +127,10 @@ class FirstStartActivity : Activity() {
                                 }
                             }
                         } else {
-                            val json = JSONObject(responseMsg)
+                            val json = JSONObject(responseMsg.toString())
                             UserData.ID = json.getString("id")
                             if (mode == AuthController.SIGN_IN) {
-                                UserData.NICKNAME = json["nickname"] as String
+                                UserData.NICKNAME = json.getJSONObject("data")["nickname"] as String
                             } else {
                                 UserData.NICKNAME = data["nickname"] as String
                             }
