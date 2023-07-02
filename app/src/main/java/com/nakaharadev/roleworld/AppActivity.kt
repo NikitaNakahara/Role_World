@@ -7,6 +7,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.SpannableString
@@ -16,6 +17,8 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +27,7 @@ import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Base64
 
 
 class AppActivity : Activity() {
@@ -43,15 +47,11 @@ class AppActivity : Activity() {
             override fun onGetMessage(msg: Message) {
                 val json = JSONObject(msg.toString())
 
-                if (json.getJSONObject("data")["state"] as String == "success") {
+                if (JSONObject(json.getString("data"))["state"] as String == "success") {
                     if (json["id"] as String == UserData.ID) {
                         authorized = true
                     }
                 }
-            }
-
-            override fun onSendMessage(msg: Message) {
-                runOnUiThread { Toast.makeText(this@AppActivity, msg.toString(), Toast.LENGTH_SHORT).show() }
             }
         })
         network?.run()
@@ -127,9 +127,48 @@ class AppActivity : Activity() {
     }
 
     private fun initUserProfileSettings() {
+        var updatedValue = ""
+        var updatedValueData = ""
+
         setContentView(R.layout.profile_settings)
 
+        findViewById<TextView>(R.id.user_profile_settings_account_exit).setOnClickListener {
+            val dialog = findViewById<RelativeLayout>(R.id.user_profile_settings_account_exit_dialog)
+            dialog.visibility = View.VISIBLE
+            (dialog.getChildAt(1) as LinearLayout).getChildAt(0).setOnClickListener {
+                dialog.visibility = View.GONE
+            }
+            (dialog.getChildAt(1) as LinearLayout).getChildAt(1).setOnClickListener {
+                File(filesDir.path + "/main.conf").delete()
+                File(filesDir.path + "/user_avatar.png").delete()
+
+                network?.stop()
+
+                startActivity(Intent(this, FirstStartActivity::class.java))
+            }
+        }
+
         findViewById<ImageView>(R.id.settings_back_btn).setOnClickListener {
+            val updateMessage = Message()
+            updateMessage.setRequestType("update")
+            updateMessage.setRequestMode(updatedValue)
+            updateMessage.setUserId(UserData.ID)
+
+            val json = JSONObject()
+            if (updatedValue != "avatar") {
+                json.put("value", updatedValueData)
+            } else {
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                UserData.AVATAR?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+                val byteArray = byteArrayOutputStream.toByteArray()
+                json.put("value", Base64.getEncoder().encodeToString(byteArray))
+            }
+
+
+            updateMessage.setData(json)
+
+            network?.sendMsg(updateMessage)
+
             rewriteConfig()
 
             initMainAppView()
@@ -143,72 +182,120 @@ class AppActivity : Activity() {
         findViewById<EditText>(R.id.settings_user_email).setText(UserData.EMAIL)
         findViewById<TextView>(R.id.settings_user_id).text = UserData.ID
 
-        findViewById<ImageView>(R.id.settings_edit_nickname).setOnClickListener {
-            val edit = findViewById<EditText>(R.id.settings_nickname_input)
+        findViewById<EditText>(R.id.settings_nickname_input).setOnLongClickListener {
+            it as EditText
 
-            it.visibility = View.GONE
+            val emailEdit = findViewById<EditText>(R.id.settings_user_email)
+            emailEdit.isFocusable = false
+            emailEdit.isFocusableInTouchMode = false
+            emailEdit.isClickable = false
+            emailEdit.setBackgroundColor(Color.TRANSPARENT)
 
-            edit.isFocusable = true
-            edit.isFocusableInTouchMode = true
-            edit.isClickable = true
+            updatedValue = "nickname"
 
-            edit.requestFocus()
+            it.setBackgroundResource(R.drawable.editable_text)
+
+            it.isFocusable = true
+            it.isFocusableInTouchMode = true
+            it.isClickable = true
+
+            it.requestFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+            imm.showSoftInput(it, InputMethodManager.SHOW_IMPLICIT)
 
-            edit.setOnEditorActionListener { v, actionId, _ ->
+            findViewById<LinearLayout>(R.id.profile_settings_bg).setOnClickListener { v ->
+                updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+            }
+
+            it.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    UserData.NICKNAME = v?.text?.toString().toString()
-
-                    it.visibility = View.VISIBLE
-                    edit.isFocusable = false
-                    edit.isFocusableInTouchMode = false
-                    edit.isClickable = false
-
-                    imm.hideSoftInputFromWindow(edit.windowToken, 0)
+                    updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
 
                     return@setOnEditorActionListener true
                 }
 
                 return@setOnEditorActionListener false
             }
+
+            return@setOnLongClickListener true
         }
 
-        findViewById<ImageView>(R.id.settings_edit_email).setOnClickListener {
-            val edit = findViewById<EditText>(R.id.settings_user_email)
+        findViewById<EditText>(R.id.settings_user_email).setOnLongClickListener {
+            it as EditText
 
-            it.visibility = View.GONE
-            edit.isFocusable = true
-            edit.isFocusableInTouchMode = true
-            edit.isClickable = true
+            val nicknameEdit = findViewById<EditText>(R.id.settings_nickname_input)
+            nicknameEdit.isFocusable = false
+            nicknameEdit.isFocusableInTouchMode = false
+            nicknameEdit.isClickable = false
+            nicknameEdit.setBackgroundColor(Color.TRANSPARENT)
 
-            edit.requestFocus()
+
+            updatedValue = "email"
+
+            it.setBackgroundResource(R.drawable.editable_text)
+
+            it.isFocusable = true
+            it.isFocusableInTouchMode = true
+            it.isClickable = true
+
+            it.requestFocus()
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+            imm.showSoftInput(it, InputMethodManager.SHOW_IMPLICIT)
 
-            edit.setOnEditorActionListener { v, actionId, _ ->
+            findViewById<LinearLayout>(R.id.profile_settings_bg).setOnClickListener { v ->
+                updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+            }
+
+            it.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    UserData.EMAIL = v?.text?.toString().toString()
-
-                    it.visibility = View.VISIBLE
-                    edit.isFocusable = false
-                    edit.isFocusableInTouchMode = false
-                    edit.isClickable = false
-
-                    imm.hideSoftInputFromWindow(edit.windowToken, 0)
+                    updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
 
                     return@setOnEditorActionListener true
                 }
 
                 return@setOnEditorActionListener false
             }
+
+            return@setOnLongClickListener true
         }
 
         findViewById<ImageView>(R.id.settings_edit_user_avatar).setOnClickListener {
+            updatedValue = "avatar"
+
             intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(intent, GET_USER_AVATAR)
         }
+    }
+
+    private fun updateField(fieldName: String, fieldData: String, it: EditText, imm: InputMethodManager): String {
+        if (fieldName == "nickname") {
+            UserData.NICKNAME = fieldData
+
+            it.isFocusable = false
+            it.isFocusableInTouchMode = false
+            it.isClickable = false
+
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
+
+            it.setBackgroundColor(Color.TRANSPARENT)
+
+            return UserData.NICKNAME
+        } else if (fieldName == "email") {
+            UserData.EMAIL = fieldData
+
+            it.isFocusable = false
+            it.isFocusableInTouchMode = false
+            it.isClickable = false
+
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
+
+            it.setBackgroundColor(Color.TRANSPARENT)
+
+            return UserData.EMAIL
+        }
+
+        return ""
     }
 
     private fun initMenu() {

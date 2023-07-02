@@ -17,4 +17,7 @@
     <string name="characters">персонажи</string>
     <string name="worlds">миры</string>
     <string name="log_out">выйти из аккаунта</string>
+    <string name="log_out_ask">выйти из аккаунта?</string>
+    <string name="back">назад</string>
+    <string name="exit">выход</string>
 </resources>

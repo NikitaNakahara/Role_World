@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.util.TypedValue
@@ -14,10 +15,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Base64
 import java.util.Locale
 
 
@@ -58,8 +62,8 @@ class FirstStartActivity : Activity() {
             }
 
             override fun onGetMessage(msg: Message) {
-                val json = JSONObject(msg.toString())
-                if (json.getJSONObject("data")["state"] == "failed") {
+                runOnUiThread { Toast.makeText(this@FirstStartActivity, msg.toString(), Toast.LENGTH_SHORT).show() }
+                if (JSONObject(msg.getData()).getString("state") == "failed") {
                     authFailed = true
                 } else {
                     responseMsg = msg
@@ -108,6 +112,7 @@ class FirstStartActivity : Activity() {
                     }
 
                     network?.sendMsg(message)
+                    Toast.makeText(this@FirstStartActivity, "send: ${message.toString()}", Toast.LENGTH_SHORT).show()
 
 
                     Thread {
@@ -127,10 +132,10 @@ class FirstStartActivity : Activity() {
                                 }
                             }
                         } else {
-                            val json = JSONObject(responseMsg.toString())
-                            UserData.ID = json.getString("id")
+                            UserData.ID = responseMsg?.getUserId().toString()
                             if (mode == AuthController.SIGN_IN) {
-                                UserData.NICKNAME = json.getJSONObject("data")["nickname"] as String
+                                UserData.NICKNAME = JSONObject(responseMsg?.getData().toString())["nickname"] as String
+                                UserData.AVATAR = stringToBitmap(JSONObject(responseMsg?.getData().toString())["avatar"] as String)
                             } else {
                                 UserData.NICKNAME = data["nickname"] as String
                             }
@@ -242,6 +247,22 @@ class FirstStartActivity : Activity() {
         ).toInt()
     }
 
+    private fun saveAvatarToFile(name: String, avatar: Bitmap) {
+        val bos = ByteArrayOutputStream()
+        avatar.compress(Bitmap.CompressFormat.PNG, 0, bos)
+        val bitmapData = bos.toByteArray()
+
+        val fos = FileOutputStream(filesDir.path + name)
+        fos.write(bitmapData)
+        fos.flush()
+        fos.close()
+    }
+
+    private fun stringToBitmap(data: String): Bitmap {
+        val bitmapSource = Base64.getDecoder().decode(data)
+        return BitmapFactory.decodeByteArray(bitmapSource, 0, bitmapSource.size)
+    }
+
     private fun changeLang() {
         val locale = Locale(Languages.activeLanguage)
         Locale.setDefault(locale)
@@ -261,7 +282,12 @@ class FirstStartActivity : Activity() {
         json.put("password", UserData.PASSWORD)
         json.put("id", UserData.ID)
         json.put("lang", UserData.LANG)
-        json.put("avatar", "null")
+        if (UserData.AVATAR == null) {
+            json.put("avatar", "null")
+        } else {
+            json.put("avatar", "/user_avatar.png")
+            saveAvatarToFile("/user_avatar.png", UserData.AVATAR!!)
+        }
 
         val output = DataOutputStream(FileOutputStream(file))
         output.writeUTF(json.toString())

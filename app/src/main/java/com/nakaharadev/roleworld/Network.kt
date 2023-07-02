@@ -1,12 +1,15 @@
 package com.nakaharadev.roleworld
 
+import android.util.Log
+import android.widget.Toast
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.net.Socket
 
+
 class Network {
-    private val HOST = "192.168.1.36"
+    private val HOST = "192.168.1.33"
     private val PORT = 3045
 
     private var socket: Socket? = null
@@ -25,12 +28,60 @@ class Network {
         messageQueueController.setCallback(object: MessageQueueController.MessageQueueControllerCallback {
             override fun onMessageReadyToSend(msg: Message) {
                 try {
-                    output?.writeUTF(msg.toString())
-                    output?.flush()
+                    if (msg.toString().length > 30000) {
+                        val strMsg = msg.toString()
+                        var len = strMsg.length
+                        var offset = 0
+                        var count = 0
+
+                        val strings = ArrayList<String>()
+
+                        while (len > 30000) {
+                            val strBuilder = StringBuilder()
+
+                            for (i: Int in 0 until 30000) {
+                                strBuilder.append(strMsg[i + offset])
+                            }
+
+                            strings.add(strBuilder.toString())
+                            offset += 30000
+                            count++
+                            len -= 30000
+                        }
+
+                        if (len != 0) {
+                            val strBuilder = StringBuilder()
+
+                            for (i: Int in 0 until len) {
+                                strBuilder.append(strMsg[i + offset])
+                            }
+
+                            strings.add(strBuilder.toString())
+                            count++
+                        }
+
+                        val sysMsg = Message()
+                        sysMsg.setRequestMode("msg_is_multiblock")
+                        sysMsg.setRequestType("sys")
+
+                        output?.writeUTF(sysMsg.toString())
+                        output?.flush()
+
+                        for (i: Int in 0 until strings.size) {
+                            output?.writeUTF(strings[i])
+                            output?.flush()
+                        }
+
+                        output?.writeUTF("\$END$")
+                        output?.flush()
+                    } else {
+                        output?.writeUTF(msg.toString())
+                        output?.flush()
+                    }
 
                     networkCallback?.onSendMessage(msg)
                 } catch (e: IOException) {
-                    e.printStackTrace()
+                    //e.printStackTrace()
                 }
             }
         })
@@ -57,11 +108,23 @@ class Network {
                 while (socket != null) {
                     try {
                         val msg = input?.readUTF()
-                        if (msg != null) {
-                            networkCallback?.onGetMessage(Message(msg))
+                        var msgObject = Message(msg.toString())
+
+                        if (msgObject.getRequestType() == "sys") {
+                            if (msgObject.getRequestMode() == "msg_is_multiblock") {
+                                val result = StringBuilder()
+                                var inputString: String?
+                                while (input!!.readUTF().also { inputString = it } != "\$END$") {
+                                    result.append(inputString)
+                                }
+                                Log.i("input", result.toString())
+                                msgObject = Message(result.toString())
+                            }
                         }
+
+                        networkCallback?.onGetMessage(msgObject)
                     } catch (e: IOException) {
-                        e.printStackTrace()
+                        //e.printStackTrace()
                         socket = null
                         networkCallback?.onDisconnected()
                     }
@@ -75,7 +138,7 @@ class Network {
         messageQueueController.addMessage(msg)
     }
 
-    public fun close() {
+    public fun stop() {
         input?.close()
         output?.close()
         socket?.close()
@@ -88,7 +151,7 @@ class Network {
                 socket = null
                 socket = Socket(HOST, PORT)
             } catch (e: IOException) {
-                e.printStackTrace()
+                //e.printStackTrace()
             }
         } while (socket == null)
     }
@@ -101,7 +164,7 @@ class Network {
             isConnected = true
             messageQueueController.setNetworkIsConnected(true)
         } catch (e: IOException) {
-            e.printStackTrace()
+            //e.printStackTrace()
 
             createConnection()
             createIOStreams()

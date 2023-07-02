@@ -31,14 +31,12 @@ class Message {
         this.userId = userId
     }
 
-    constructor(msg: String) {
-        Message(JSONObject(msg))
-    }
+    constructor(msg: String) : this(JSONObject(msg))
 
     constructor(msg: JSONObject) {
         this.requestType = msg.getString("type")
         this.requestMode = msg.getString("mode")
-        this.data = JSONObject(msg.getString("data")).toString()
+        if (msg.getString("data").isNotEmpty()) this.data = JSONObject(msg.getString("data")).toString()
         this.userId = msg.getString("id")
     }
 
