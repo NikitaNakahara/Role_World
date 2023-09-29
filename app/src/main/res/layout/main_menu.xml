@@ -15,6 +15,13 @@
             android:layout_alignParentStart="true"
             android:src="@drawable/burger_menu_anim"
             android:id="@+id/open_close_menu_btn"/>
+        <ImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/add_icon"
+            android:id="@+id/add"/>
     </RelativeLayout>
     <ViewFlipper
         android:layout_width="match_parent"
@@ -30,7 +37,35 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/worlds_layout"
                 android:orientation="vertical">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="нет активных миров :("
+                    android:textSize="17sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_gravity="center"
+                    android:id="@+id/not_worlds"
+                    android:layout_marginTop="30dp" />
+            </LinearLayout>
+        </ScrollView>
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/characters_scroll">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/characters_layout"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="нет персонажей :("
+                    android:textSize="17sp"
+                    android:textColor="@color/gray_text"
+                    android:layout_gravity="center"
+                    android:id="@+id/not_characters"
+                    android:layout_marginTop="30dp" />
             </LinearLayout>
         </ScrollView>
     </ViewFlipper>
@@ -41,6 +76,74 @@
         android:background="#000"
         android:alpha="0.0"
         android:id="@+id/darkening"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:id="@+id/add_character_layout"
+        android:visibility="gone"
+        android:scaleX="0.0"
+        android:scaleY="0.0">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/new_character"
+            android:textSize="23sp"
+            android:layout_marginBottom="10dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_view_bg"
+            android:paddingVertical="20dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="30dp"
+            android:clickable="true">
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginBottom="30dp"
+                android:src="@drawable/default_user_avatar"
+                android:id="@+id/add_character_avatar"
+                app:shapeAppearance="@style/RoundImageViewShape"
+                android:scaleType="centerCrop"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/dialog_view_bg"
+                android:hint="@string/input_nickname_hint"
+                android:textColorHint="@color/gray_text"
+                android:id="@+id/add_character_name"
+                android:layout_marginBottom="10dp"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/dialog_view_bg"
+                android:hint="раса"
+                android:textColorHint="@color/gray_text"
+                android:id="@+id/add_character_rasa"
+                android:layout_marginBottom="20dp"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@drawable/dialog_view_bg"
+                android:hint="описание"
+                android:textColorHint="@color/gray_text"
+                android:id="@+id/add_character_description"
+                android:gravity="start|top"/>
+        </LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/done"
+            android:textSize="23sp"
+            android:layout_marginTop="15dp"
+            android:id="@+id/add_character_btn"/>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="match_parent"

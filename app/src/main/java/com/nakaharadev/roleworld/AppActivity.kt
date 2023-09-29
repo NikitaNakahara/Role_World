@@ -11,10 +11,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.SpannableString
 import android.text.style.UnderlineSpan
+import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -25,6 +27,7 @@ import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ViewFlipper
 import androidx.core.animation.addListener
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -38,6 +41,12 @@ class AppActivity : Activity() {
     private var network: Network? = null
 
     private val GET_USER_AVATAR = 0
+    private val GET_CHARACTER_AVATAR = 1
+
+    private val WORLDS_LAYOUT = 0
+    private val CHARACTERS_LAYOUT = 1
+
+    private var openedLayout = WORLDS_LAYOUT
 
     private var authorized = false
 
@@ -75,6 +84,10 @@ class AppActivity : Activity() {
                     UserData.AVATAR = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
                     findViewById<ImageView>(R.id.settings_user_avatar).setImageBitmap(UserData.AVATAR)
                 }
+                if (requestCode == GET_CHARACTER_AVATAR) {
+                    val uri = data?.data
+                    findViewById<ImageView>(R.id.add_character_avatar).setImageBitmap(MediaStore.Images.Media.getBitmap(this.contentResolver, uri))
+                }
             }
         }
     }
@@ -103,6 +116,104 @@ class AppActivity : Activity() {
             saveAvatarToFile("/user_avatar.png", UserData.AVATAR!!)
         }
         initMenu()
+
+        for (character in UserData.CHARACTERS) {
+            val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
+            val container = findViewById<LinearLayout>(R.id.characters_layout)
+
+            elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
+            elem.findViewById<TextView>(R.id.character_name).text = character.getName()
+            elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
+
+            container.removeView(findViewById(R.id.not_characters))
+            container.addView(elem)
+        }
+
+        findViewById<ImageView>(R.id.add).setOnClickListener {
+            if (openedLayout == CHARACTERS_LAYOUT) {
+                val dialog = findViewById<LinearLayout>(R.id.add_character_layout)
+                dialog.visibility = View.GONE
+
+                val darkening = findViewById<View>(R.id.darkening)
+                var animator = ValueAnimator.ofFloat(0.0f, 1.0f)
+                dialog.visibility = View.VISIBLE
+                darkening.isClickable = true
+
+                animator.addUpdateListener {
+                    dialog.scaleX = it.animatedValue as Float
+                    dialog.scaleY = it.animatedValue as Float
+                    darkening.alpha = (it.animatedValue as Float) / 2
+                }
+                animator.start()
+
+                findViewById<ImageView>(R.id.add_character_avatar).setOnClickListener {
+                    intent = Intent(Intent.ACTION_GET_CONTENT)
+                    intent.type = "image/*"
+                    startActivityForResult(intent, GET_CHARACTER_AVATAR)
+                }
+
+                findViewById<TextView>(R.id.add_character_btn).setOnClickListener {
+                    val character = Character(
+                        findViewById<EditText>(R.id.add_character_name).text.toString(),
+                        "",
+                        findViewById<EditText>(R.id.add_character_rasa).text.toString(),
+                        findViewById<EditText>(R.id.add_character_description).text.toString(),
+                        (findViewById<ImageView>(R.id.add_character_avatar).drawable as BitmapDrawable).bitmap,
+                    )
+                    UserData.CHARACTERS.add(character)
+
+                    val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
+                    val container = findViewById<LinearLayout>(R.id.characters_layout)
+
+                    elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
+                    elem.findViewById<TextView>(R.id.character_name).text = character.getName()
+                    elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
+
+                    container.removeView(findViewById(R.id.not_characters))
+                    container.addView(elem)
+
+                    darkening.isClickable = false
+                    animator = ValueAnimator.ofFloat(1.0f, 0.0f)
+                    animator.addUpdateListener {
+                        dialog.scaleX = it.animatedValue as Float
+                        dialog.scaleY = it.animatedValue as Float
+                        darkening.alpha = (it.animatedValue as Float) / 2
+                    }
+                    animator.addListener(object : AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {}
+                        override fun onAnimationCancel(animation: Animator) {}
+                        override fun onAnimationRepeat(animation: Animator) {}
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            dialog.visibility = View.GONE
+                            darkening.isClickable = false
+                        }
+                    })
+                    animator.start()
+                }
+
+                darkening.setOnClickListener {
+                    darkening.isClickable = false
+                    animator = ValueAnimator.ofFloat(1.0f, 0.0f)
+                    animator.addUpdateListener {
+                        dialog.scaleX = it.animatedValue as Float
+                        dialog.scaleY = it.animatedValue as Float
+                        darkening.alpha = (it.animatedValue as Float) / 2
+                    }
+                    animator.addListener(object : AnimatorListener {
+                        override fun onAnimationStart(animation: Animator) {}
+                        override fun onAnimationCancel(animation: Animator) {}
+                        override fun onAnimationRepeat(animation: Animator) {}
+
+                        override fun onAnimationEnd(animation: Animator) {
+                            dialog.visibility = View.GONE
+                            darkening.isClickable = false
+                        }
+                    })
+                    animator.start()
+                }
+            }
+        }
     }
 
     private fun initUserProfile() {
@@ -135,6 +246,18 @@ class AppActivity : Activity() {
         var updatedValueData = ""
 
         setContentView(R.layout.profile_settings)
+
+        for (character in UserData.CHARACTERS) {
+            val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
+            val container = findViewById<LinearLayout>(R.id.user_profile_settings_characters_layout)
+
+            elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
+            elem.findViewById<TextView>(R.id.character_name).text = character.getName()
+            elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
+
+            container.removeView(findViewById(R.id.user_profile_settings_characters_layout_empty))
+            container.addView(elem)
+        }
 
         findViewById<TextView>(R.id.user_profile_settings_account_exit).setOnClickListener {
             val dialog = findViewById<RelativeLayout>(R.id.user_profile_settings_account_exit_dialog)
@@ -337,6 +460,11 @@ class AppActivity : Activity() {
 
         Menu.setMenuCallback(object: Menu.MenuCallback() {
             override fun onMenuButtonPressed(id: Int) {
+                if (id == R.id.app_menu_characters_btn) openedLayout = CHARACTERS_LAYOUT
+                if (id == R.id.app_menu_worlds_btn) openedLayout = WORLDS_LAYOUT
+
+                findViewById<ViewFlipper>(R.id.menu_flipper).displayedChild = openedLayout
+
                 Menu.hiddenMenu()
             }
 

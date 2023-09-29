@@ -23,4 +23,6 @@
     <string name="dont_have_any_friends">You don\'t have any friends :(</string>
     <string name="friends">friends</string>
     <string name="dont_have_any_characters">You don\'t have any characters :(</string>
+    <string name="new_character">new character</string>
+    <string name="done">done</string>
 </resources>

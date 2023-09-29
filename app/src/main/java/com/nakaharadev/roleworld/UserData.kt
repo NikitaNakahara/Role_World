@@ -9,4 +9,5 @@ object UserData {
     public var EMAIL = ""
     public var LANG = ""
     public var AVATAR: Bitmap? = null
+    public var CHARACTERS = ArrayList<Character>()
 }
