@@ -44,7 +44,7 @@ object Menu {
                 menuCallback?.onMenuButtonPressed(it.id)
 
                 for (j: Int in 1 until menuLayout?.childCount!!) {
-                    context?.resources?.getColor(R.color.gray_bg)
+                    context?.resources?.getColor(R.color.header_bg)
                         ?.let { it1 -> menuLayout?.getChildAt(j)?.setBackgroundColor(it1) }
                 }
 

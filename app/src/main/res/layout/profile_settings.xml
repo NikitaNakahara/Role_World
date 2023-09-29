@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:paddingHorizontal="10dp"
-        android:background="@color/gray_bg">
+        android:background="@color/header_bg">
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -26,11 +26,13 @@
         android:layout_marginTop="50dp"
         android:layout_marginBottom="40dp"
         android:orientation="vertical"
-        android:id="@+id/profile_settings_bg">
+        android:id="@+id/profile_settings_bg"
+        android:divider="#414243"
+        android:showDividers="middle"
+        android:dividerPadding="5dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
             android:paddingHorizontal="10dp"
             android:orientation="horizontal"
             android:paddingVertical="10dp">
@@ -113,6 +115,64 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/friends"
+                android:textSize="20sp"
+                android:gravity="center_vertical"/>
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:paddingHorizontal="10dp">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/user_profile_settings_friends_layout"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dont_have_any_friends"
+                        android:textColor="@color/gray_text"/>
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/characters"
+                android:textSize="20sp"
+                android:gravity="center_vertical"/>
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="10dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/user_profile_settings_characters_layout"
+                    android:orientation="horizontal"
+                    android:gravity="center_horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dont_have_any_characters"
+                        android:textColor="@color/gray_text"/>
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
     </LinearLayout>
     <TextView
         android:layout_width="match_parent"
@@ -123,13 +183,22 @@
         android:layout_alignParentBottom="true"
         android:textSize="15sp"
         android:id="@+id/user_profile_settings_account_exit"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:background="#000"
+        android:alpha="0.0"
+        android:id="@+id/profile_settings_darkening"/>
     <RelativeLayout
         android:layout_width="300dp"
         android:layout_height="150dp"
         android:layout_centerInParent="true"
         android:background="@drawable/dialog_view_bg"
         android:visibility="gone"
-        android:id="@+id/user_profile_settings_account_exit_dialog">
+        android:id="@+id/user_profile_settings_account_exit_dialog"
+        android:scaleX="0.0"
+        android:scaleY="0.0">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

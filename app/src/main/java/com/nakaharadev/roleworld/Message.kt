@@ -2,7 +2,7 @@ package com.nakaharadev.roleworld
 
 import org.json.JSONObject
 
-class Message {
+class Message() {
     companion object {
         public val AUTH_REQ_TYPE = "auth"
 
@@ -15,16 +15,14 @@ class Message {
     private var data        = ""
     private var userId      = ""
 
-    constructor()
-
-    constructor(requestType: String, requestMode: String, data: String, userId: String) {
+    constructor(requestType: String, requestMode: String, data: String, userId: String) : this() {
         this.requestType = requestType
         this.requestMode = requestMode
         this.data = data
         this.userId = userId
     }
 
-    constructor(requestType: String, requestMode: String, data: JSONObject, userId: String) {
+    constructor(requestType: String, requestMode: String, data: JSONObject, userId: String) : this() {
         this.requestType = requestType
         this.requestMode = requestMode
         this.data = data.toString()
@@ -33,7 +31,7 @@ class Message {
 
     constructor(msg: String) : this(JSONObject(msg))
 
-    constructor(msg: JSONObject) {
+    constructor(msg: JSONObject) : this() {
         this.requestType = msg.getString("type")
         this.requestMode = msg.getString("mode")
         if (msg.getString("data").isNotEmpty()) this.data = JSONObject(msg.getString("data")).toString()

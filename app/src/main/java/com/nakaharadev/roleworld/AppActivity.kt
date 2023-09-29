@@ -1,6 +1,9 @@
 package com.nakaharadev.roleworld
 
 import android.R.attr.label
+import android.animation.Animator
+import android.animation.Animator.AnimatorListener
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -22,6 +25,7 @@ import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.animation.addListener
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -134,9 +138,37 @@ class AppActivity : Activity() {
 
         findViewById<TextView>(R.id.user_profile_settings_account_exit).setOnClickListener {
             val dialog = findViewById<RelativeLayout>(R.id.user_profile_settings_account_exit_dialog)
+            val darkening = findViewById<View>(R.id.profile_settings_darkening)
+            var animator = ValueAnimator.ofFloat(0.0f, 1.0f)
             dialog.visibility = View.VISIBLE
+            darkening.isClickable = true
+
+            animator.addUpdateListener {
+                dialog.scaleX = it.animatedValue as Float
+                dialog.scaleY = it.animatedValue as Float
+                darkening.alpha = (it.animatedValue as Float) / 2
+            }
+            animator.start()
+
             (dialog.getChildAt(1) as LinearLayout).getChildAt(0).setOnClickListener {
-                dialog.visibility = View.GONE
+                darkening.isClickable = false
+                animator = ValueAnimator.ofFloat(1.0f, 0.0f)
+                animator.addUpdateListener {
+                    dialog.scaleX = it.animatedValue as Float
+                    dialog.scaleY = it.animatedValue as Float
+                    darkening.alpha = (it.animatedValue as Float) / 2
+                }
+                animator.addListener(object : AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
+                    override fun onAnimationCancel(animation: Animator) {}
+                    override fun onAnimationRepeat(animation: Animator) {}
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        dialog.visibility = View.GONE
+                        darkening.isClickable = false
+                    }
+                })
+                animator.start()
             }
             (dialog.getChildAt(1) as LinearLayout).getChildAt(1).setOnClickListener {
                 File(filesDir.path + "/main.conf").delete()

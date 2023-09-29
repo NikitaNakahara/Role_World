@@ -9,7 +9,7 @@
     </item>
     <item android:left="2dp">
         <shape>
-            <solid android:color="@color/gray_bg"/>
+            <solid android:color="@color/header_bg"/>
         </shape>
     </item>
 </layer-list>

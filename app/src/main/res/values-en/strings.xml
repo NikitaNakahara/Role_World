@@ -20,4 +20,7 @@
     <string name="log_out_ask">Exit from account?</string>
     <string name="back">back</string>
     <string name="exit">exit</string>
+    <string name="dont_have_any_friends">You don\'t have any friends :(</string>
+    <string name="friends">friends</string>
+    <string name="dont_have_any_characters">You don\'t have any characters :(</string>
 </resources>

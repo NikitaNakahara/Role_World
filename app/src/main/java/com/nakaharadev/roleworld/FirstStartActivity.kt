@@ -112,8 +112,6 @@ class FirstStartActivity : Activity() {
                     }
 
                     network?.sendMsg(message)
-                    Toast.makeText(this@FirstStartActivity, "send: ${message.toString()}", Toast.LENGTH_SHORT).show()
-
 
                     Thread {
                         while (!responseIsGet);

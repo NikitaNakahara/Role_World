@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:paddingHorizontal="10dp"
-        android:background="@color/gray_bg">
+        android:background="@color/header_bg">
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -46,7 +46,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="50dp"
-        android:background="@color/gray_bg"
+        android:background="@color/header_bg"
         android:id="@+id/app_menu_layout"
         android:translationX="-301dp">
         <RelativeLayout
@@ -128,6 +128,6 @@
             android:paddingHorizontal="15dp"
             android:text="@string/characters"
             android:id="@+id/app_menu_characters_btn"
-            android:background="@color/gray_bg"/>
+            android:background="@color/header_bg"/>
     </LinearLayout>
 </RelativeLayout>
