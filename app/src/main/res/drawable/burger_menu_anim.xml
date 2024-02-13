@@ -5,44 +5,71 @@
         <vector
             android:width="50dp"
             android:height="50dp"
-            android:viewportHeight="28"
-            android:viewportWidth="28"
+            android:viewportHeight="505"
+            android:viewportWidth="505"
             android:autoMirrored="true">
             <group android:name="top_line"
-                android:pivotX="4"
-                android:pivotY="7">
+                android:pivotX="40"
+                android:pivotY="30">
                 <path
                     android:fillColor="#FFFFFF"
-                    android:pathData="M4,7C4,6.448 4.448,6 5,6H24C24.552,6 25,6.448 25,7C25,7.552 24.552,8 24,8H5C4.448,8 4,7.552 4,7Z"/>
+                    android:pathData="M0,35.56C0.33,38.19,1.73,46.71,9,54c7.08,7.11,15.34,8.62,18,9c150,0,300,0,450,0c3.2-0.52,11.16-2.27,18-9
+	c2.77-2.72,9-8.85,9-18s-6.23-15.28-9-18c-6.84-6.73-14.8-8.48-18-9C327,9,177,9,27,9c-2.7,0.39-10.91,1.94-18,9
+	C2.09,24.88,0.44,32.83,0,35.56z"/>
             </group>
             <group android:name="center_line"
                 android:pivotX="4"
                 android:pivotY="14">
                 <path
                     android:fillColor="#FFFFFF"
-                    android:pathData="M4,14C4,13.448 4.448,13 5,13L16,13C16.552,13 17,13.448 17,14C17,14.552 16.552,15 16,15L5,15C4.448,15 4,14.552 4,14Z"/>
+                    android:pathData="M0,252c0,9.15,6.23,15.28,9,18c6.84,6.73,14.8,8.48,18,9c123,0,246,0,369,0c2.66-0.38,10.9-1.9,18-9
+	c1.9-1.9,7.58-8.06,9-18c-0.38-2.66-1.9-10.9-9-18c-1.9-1.9-8.06-7.58-18-9c-123,0-246,0-369,0c-3.2,0.52-11.16,2.27-18,9
+	C6.23,236.72,0,242.85,0,252z"/>
             </group>
             <group android:name="bottom_line"
-                android:scaleX="1.1"
-                android:translateX="-0.2"
-                android:pivotX="5"
-                android:pivotY="20">
+                android:pivotX="40"
+                android:pivotY="475">
                 <path
                     android:fillColor="#FFFFFF"
-                    android:pathData="M5,20C4.448,20 4,20.448 4,21C4,21.552 4.448,22 5,22H22C22.552,22 23,21.552 23,21C23,20.448 22.552,20 22,20H5Z"/>
+                    android:pathData="M0,468c0,9.15,6.23,15.28,9,18c6.84,6.73,14.8,8.48,18,9c150,0,300,0,450,0c3.68-0.75,11.15-2.79,18-9
+	c3.7-3.36,9.5-8.61,10-16.56c0.6-9.51-6.78-16.43-10-19.44c-6.79-6.36-14.41-8.32-18-9c-150,0-300,0-450,0
+	c-3.2,0.52-11.16,2.27-18,9C6.23,452.72,0,458.85,0,468z"/>
             </group>
         </vector>
     </aapt:attr>
 
     <target android:name="top_line">
         <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="300"
-                android:interpolator="@android:anim/accelerate_decelerate_interpolator"
-                android:propertyName="rotation"
-                android:repeatCount="0"
-                android:valueFrom="0"
-                android:valueTo="45"/>
+            <set>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="45"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="scaleX"
+                    android:repeatCount="0"
+                    android:valueFrom="1.0"
+                    android:valueTo="1.38"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="translateX"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="10"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="translateY"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="10"/>
+            </set>
         </aapt:attr>
     </target>
 
@@ -60,13 +87,36 @@
 
     <target android:name="bottom_line">
         <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="300"
-                android:interpolator="@android:anim/accelerate_decelerate_interpolator"
-                android:propertyName="rotation"
-                android:repeatCount="0"
-                android:valueFrom="0"
-                android:valueTo="-45"/>
+            <set>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="-45"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="scaleX"
+                    android:repeatCount="0"
+                    android:valueFrom="1.0"
+                    android:valueTo="1.38"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="translateX"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="10"/>
+                <objectAnimator
+                    android:duration="300"
+                    android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+                    android:propertyName="translateY"
+                    android:repeatCount="0"
+                    android:valueFrom="0"
+                    android:valueTo="-10"/>
+            </set>
         </aapt:attr>
     </target>
 </animated-vector>

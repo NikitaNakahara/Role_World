@@ -9,7 +9,7 @@ import java.net.Socket
 
 
 class Network {
-    private val HOST = "192.168.1.33"
+    private val HOST = "192.168.0.114"
     private val PORT = 4035
 
     private var socket: Socket? = null
@@ -23,6 +23,8 @@ class Network {
     private var isConnected = false
 
     private val messageQueueController = MessageQueueController()
+
+    private val getCallbacksList = ArrayList<GetMessageCallbackData>()
 
     init {
         messageQueueController.setCallback(object: MessageQueueController.MessageQueueControllerCallback {
@@ -89,6 +91,15 @@ class Network {
         messageQueueController.runControllerLoop()
     }
 
+    public fun addGetMessageCallback(requestType: String, requestMode: String, callback: (Message) -> Unit) {
+        val data = GetMessageCallbackData()
+        data.type = requestType
+        data.mode = requestMode
+        data.callback = callback
+
+        getCallbacksList.add(data)
+    }
+
     public fun setNetworkCallback(callback: NetworkCallback) {
         networkCallback = callback
     }
@@ -119,6 +130,12 @@ class Network {
                                 }
                                 Log.i("input", result.toString())
                                 msgObject = Message(result.toString())
+                            }
+                        }
+
+                        for (callbackData: GetMessageCallbackData in getCallbacksList) {
+                            if (callbackData.type == msgObject.getRequestType() && callbackData.mode == msgObject.getRequestMode()) {
+                                callbackData.callback!!(msgObject)
                             }
                         }
 
@@ -176,5 +193,11 @@ class Network {
         public fun onGetMessage(msg: Message)
         public fun onSendMessage(msg: Message) {}
         public fun onDisconnected() {}
+    }
+
+    private class GetMessageCallbackData {
+        public var type = ""
+        public var mode = ""
+        public var callback: ((Message) -> Unit)? = null
     }
 }

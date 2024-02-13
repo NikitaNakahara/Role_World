@@ -1,35 +1,62 @@
 package com.nakaharadev.roleworld
 
 import android.graphics.Bitmap
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.util.ArrayList
 import java.util.Base64
+import java.util.HashMap
 
-class Character(name: String, sex: String, rasa: String, description: String, avatar: Bitmap) {
-    private var name = name
-    private var sex = sex
-    private var rasa = rasa
-    private var description = description
-    private var avatar = avatar
+class Character {
+    private val fields = HashMap<String, String>()
+    private var avatar: Bitmap? = null
 
-    fun getName(): String { return name }
-    fun getSex(): String { return sex }
-    fun getRasa(): String { return rasa }
-    fun getDescription(): String { return description }
-    fun getAvatar(): Bitmap { return avatar }
+    private val titles = ArrayList<String>()
+
+    private var id: String = ""
+
+    fun addDataField(title: String, data: String) {
+        titles.add(title)
+        fields[title] = data
+    }
+
+    fun getDataField(title: String) : String? {
+        return fields[title]
+    }
+
+    fun setAvatar(avatar: Bitmap) { this.avatar = avatar }
+    fun getAvatar(): Bitmap? { return avatar }
+
+    fun getAvatarAsString(): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        avatar?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+
+        return Base64.getEncoder().encodeToString(byteArray)
+    }
+
+    fun setID(id: String) { this.id = id }
+    fun getID(): String { return id }
+
+    fun getTitles(): ArrayList<String> { return titles }
 
     override fun toString(): String {
         val json = JSONObject()
-        json.put("name", name)
-        json.put("sex", sex)
-        json.put("rasa", rasa)
-        json.put("description", description)
+
+        val array = ArrayList<String?>()
+        for (i in 0 until titles.size) {
+            array.add(titles[i])
+            array.add(fields[titles[i]])
+        }
+        json.put("data", array.toString())
 
         val byteArrayOutputStream = ByteArrayOutputStream()
-        UserData.AVATAR?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        avatar?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
+
         json.put("avatar", Base64.getEncoder().encodeToString(byteArray))
 
-        return json.toString()
+        return json.toString();
     }
 }

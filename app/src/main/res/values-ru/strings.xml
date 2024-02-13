@@ -23,6 +23,10 @@
     <string name="dont_have_any_friends">У вас нет друзей :(</string>
     <string name="friends">друзья</string>
     <string name="dont_have_any_characters">У вас нет персонажей :(</string>
-    <string name="new_character">новый персонаж</string>
     <string name="done">готово</string>
+    <string name="add_field">добавить поле</string>
+    <string name="world">мир</string>
+    <string name="character">персонаж</string>
+    <string name="field_name">название</string>
+    <string name="field_data">инфо</string>
 </resources>

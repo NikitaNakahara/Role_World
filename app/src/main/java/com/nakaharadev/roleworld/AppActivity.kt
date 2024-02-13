@@ -7,7 +7,6 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -16,6 +15,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.text.SpannableString
 import android.text.style.UnderlineSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -28,7 +28,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.ViewFlipper
-import androidx.core.animation.addListener
+import com.google.android.material.imageview.ShapeableImageView
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -41,7 +41,7 @@ class AppActivity : Activity() {
     private var network: Network? = null
 
     private val GET_USER_AVATAR = 0
-    private val GET_CHARACTER_AVATAR = 1
+    private val GET_CONSTRUCTOR_AVATAR = 1
 
     private val WORLDS_LAYOUT = 0
     private val CHARACTERS_LAYOUT = 1
@@ -49,6 +49,8 @@ class AppActivity : Activity() {
     private var openedLayout = WORLDS_LAYOUT
 
     private var authorized = false
+    private var characterAdded = false
+    private var characterID = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +63,10 @@ class AppActivity : Activity() {
                 val json = JSONObject(msg.toString())
 
                 if (JSONObject(json.getString("data"))["state"] as String == "success") {
+                    if (JSONObject(json.getString("data"))["request"] as String == "add_character") {
+                        characterAdded = true
+                        characterID = json["id"] as String
+                    }
                     if (json["id"] as String == UserData.ID) {
                         authorized = true
                     }
@@ -68,6 +74,8 @@ class AppActivity : Activity() {
             }
         })
         network?.run()
+
+        Database.init(this)
 
         authUser()
 
@@ -84,9 +92,15 @@ class AppActivity : Activity() {
                     UserData.AVATAR = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
                     findViewById<ImageView>(R.id.settings_user_avatar).setImageBitmap(UserData.AVATAR)
                 }
-                if (requestCode == GET_CHARACTER_AVATAR) {
+
+                if (requestCode == GET_CONSTRUCTOR_AVATAR) {
                     val uri = data?.data
-                    findViewById<ImageView>(R.id.add_character_avatar).setImageBitmap(MediaStore.Images.Media.getBitmap(this.contentResolver, uri))
+                    findViewById<ImageView>(R.id.constructor_avatar).setImageBitmap(
+                        MediaStore.Images.Media.getBitmap(
+                            this.contentResolver,
+                            uri
+                        )
+                    )
                 }
             }
         }
@@ -103,115 +117,216 @@ class AppActivity : Activity() {
 
         msg.setData(msgData)
 
-        //Toast.makeText(this, msg.toString(), Toast.LENGTH_SHORT).show()
-
         network?.sendMsg(msg)
+
+
     }
 
     private fun initMainAppView() {
         setContentView(R.layout.main_menu)
 
         initUserProfile()
+
         if (UserData.AVATAR != null) {
             saveAvatarToFile("/user_avatar.png", UserData.AVATAR!!)
         }
+
         initMenu()
+
+        val characters = Database.getAllCharacters()
+        for (character in characters) {
+            UserData.CHARACTERS.add(character)
+        }
 
         for (character in UserData.CHARACTERS) {
             val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
             val container = findViewById<LinearLayout>(R.id.characters_layout)
 
-            elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
-            elem.findViewById<TextView>(R.id.character_name).text = character.getName()
-            elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
+            elem.findViewById<ShapeableImageView>(R.id.character_avatar)
+                .setImageBitmap(character.getAvatar())
+            elem.findViewById<TextView>(R.id.character_name).text =
+                character.getDataField(resources.getString(R.string.input_nickname_hint))
 
             container.removeView(findViewById(R.id.not_characters))
             container.addView(elem)
         }
 
         findViewById<ImageView>(R.id.add).setOnClickListener {
+            var currentMode = openedLayout
+
             if (openedLayout == CHARACTERS_LAYOUT) {
-                val dialog = findViewById<LinearLayout>(R.id.add_character_layout)
-                dialog.visibility = View.GONE
+                findViewById<TextView>(R.id.constructor_selector_character).setBackgroundResource(R.drawable.constructor_selected_cursor)
+                findViewById<TextView>(R.id.constructor_selector_world).setBackgroundColor(
+                    Color.parseColor(
+                        "#00000000"
+                    )
+                )
+            } else {
+                findViewById<TextView>(R.id.constructor_selector_world).setBackgroundResource(R.drawable.constructor_selected_cursor)
+                findViewById<TextView>(R.id.constructor_selector_character).setBackgroundColor(
+                    Color.parseColor(
+                        "#00000000"
+                    )
+                )
+            }
 
-                val darkening = findViewById<View>(R.id.darkening)
-                var animator = ValueAnimator.ofFloat(0.0f, 1.0f)
-                dialog.visibility = View.VISIBLE
-                darkening.isClickable = true
+            findViewById<TextView>(R.id.constructor_selector_character).setOnClickListener {
+                findViewById<TextView>(R.id.constructor_selector_character).setBackgroundResource(R.drawable.constructor_selected_cursor)
+                findViewById<TextView>(R.id.constructor_selector_world).setBackgroundColor(
+                    Color.parseColor(
+                        "#00000000"
+                    )
+                )
 
+                currentMode = CHARACTERS_LAYOUT
+            }
+
+            findViewById<TextView>(R.id.constructor_selector_world).setOnClickListener {
+                findViewById<TextView>(R.id.constructor_selector_world).setBackgroundResource(R.drawable.constructor_selected_cursor)
+                findViewById<TextView>(R.id.constructor_selector_character).setBackgroundColor(
+                    Color.parseColor(
+                        "#00000000"
+                    )
+                )
+
+                currentMode = WORLDS_LAYOUT
+            }
+
+            val constructor = findViewById<RelativeLayout>(R.id.constructor)
+
+            constructor.visibility = LinearLayout.VISIBLE
+
+            val darkening = findViewById<View>(R.id.darkening)
+            darkening.isClickable = true
+            darkening.setOnClickListener {
+                val animator = ValueAnimator.ofFloat(1.0f, 0.0f)
+                animator.duration = 300
                 animator.addUpdateListener {
-                    dialog.scaleX = it.animatedValue as Float
-                    dialog.scaleY = it.animatedValue as Float
-                    darkening.alpha = (it.animatedValue as Float) / 2
+                    constructor.scaleX = it.animatedValue as Float
+                    constructor.scaleY = it.animatedValue as Float
+                    darkening.alpha = it.animatedValue as Float / 2.0f
                 }
                 animator.start()
 
-                findViewById<ImageView>(R.id.add_character_avatar).setOnClickListener {
-                    intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "image/*"
-                    startActivityForResult(intent, GET_CHARACTER_AVATAR)
+                darkening.isClickable = false
+            }
+
+            val animator = ValueAnimator.ofFloat(0.0f, 1.0f)
+            animator.duration = 300
+            animator.addUpdateListener {
+                constructor.scaleX = it.animatedValue as Float
+                constructor.scaleY = it.animatedValue as Float
+                darkening.alpha = it.animatedValue as Float / 2.0f
+            }
+            animator.start()
+
+            findViewById<ShapeableImageView>(R.id.constructor_avatar).setOnClickListener {
+                intent = Intent(Intent.ACTION_GET_CONTENT)
+                intent.type = "image/*"
+                startActivityForResult(intent, GET_CONSTRUCTOR_AVATAR)
+            }
+
+            findViewById<LinearLayout>(R.id.constructor_add_field).setOnClickListener {
+                val elem = LayoutInflater.from(this).inflate(R.layout.constructor_field, null)
+                findViewById<LinearLayout>(R.id.constructor_fields_layout).addView(
+                    elem,
+                    findViewById<LinearLayout>(R.id.constructor_fields_layout).childCount - 1
+                )
+
+                findViewById<ScrollView>(R.id.constructor_fields_scroll).post {
+                    findViewById<ScrollView>(
+                        R.id.constructor_fields_scroll
+                    ).fullScroll(ScrollView.FOCUS_DOWN)
                 }
+            }
 
-                findViewById<TextView>(R.id.add_character_btn).setOnClickListener {
-                    val character = Character(
-                        findViewById<EditText>(R.id.add_character_name).text.toString(),
-                        "",
-                        findViewById<EditText>(R.id.add_character_rasa).text.toString(),
-                        findViewById<EditText>(R.id.add_character_description).text.toString(),
-                        (findViewById<ImageView>(R.id.add_character_avatar).drawable as BitmapDrawable).bitmap,
-                    )
-                    UserData.CHARACTERS.add(character)
+            findViewById<TextView>(R.id.constructor_done).setOnClickListener {
+                if (currentMode == CHARACTERS_LAYOUT) {
+                    val character = Character()
 
-                    val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
-                    val container = findViewById<LinearLayout>(R.id.characters_layout)
+                    val layout = findViewById<LinearLayout>(R.id.constructor_fields_layout)
 
-                    elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
-                    elem.findViewById<TextView>(R.id.character_name).text = character.getName()
-                    elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
-
-                    container.removeView(findViewById(R.id.not_characters))
-                    container.addView(elem)
-
-                    darkening.isClickable = false
-                    animator = ValueAnimator.ofFloat(1.0f, 0.0f)
-                    animator.addUpdateListener {
-                        dialog.scaleX = it.animatedValue as Float
-                        dialog.scaleY = it.animatedValue as Float
-                        darkening.alpha = (it.animatedValue as Float) / 2
-                    }
-                    animator.addListener(object : AnimatorListener {
-                        override fun onAnimationStart(animation: Animator) {}
-                        override fun onAnimationCancel(animation: Animator) {}
-                        override fun onAnimationRepeat(animation: Animator) {}
-
-                        override fun onAnimationEnd(animation: Animator) {
-                            dialog.visibility = View.GONE
-                            darkening.isClickable = false
+                    var nameIsExists = false
+                    for (i in 0 until layout.childCount - 1) {
+                        if (layout.getChildAt(i)
+                                .findViewById<TextView>(R.id.constructor_field_title).text.toString()
+                                .lowercase() == resources.getString(R.string.input_nickname_hint)
+                        ) {
+                            nameIsExists = true
                         }
-                    })
-                    animator.start()
-                }
-
-                darkening.setOnClickListener {
-                    darkening.isClickable = false
-                    animator = ValueAnimator.ofFloat(1.0f, 0.0f)
-                    animator.addUpdateListener {
-                        dialog.scaleX = it.animatedValue as Float
-                        dialog.scaleY = it.animatedValue as Float
-                        darkening.alpha = (it.animatedValue as Float) / 2
                     }
-                    animator.addListener(object : AnimatorListener {
-                        override fun onAnimationStart(animation: Animator) {}
-                        override fun onAnimationCancel(animation: Animator) {}
-                        override fun onAnimationRepeat(animation: Animator) {}
 
-                        override fun onAnimationEnd(animation: Animator) {
-                            dialog.visibility = View.GONE
-                            darkening.isClickable = false
+                    if (nameIsExists) {
+                        for (i in 0 until layout.childCount - 1) {
+                            if (layout.getChildAt(i)
+                                    .findViewById<TextView>(R.id.constructor_field_title).text.toString()
+                                    .lowercase() == resources.getString(R.string.input_nickname_hint)
+                            ) {
+                                character.addDataField(
+                                    layout.getChildAt(i)
+                                        .findViewById<TextView>(R.id.constructor_field_title).text.toString()
+                                        .lowercase(),
+                                    layout.getChildAt(i)
+                                        .findViewById<TextView>(R.id.constructor_field_data).text.toString()
+                                )
+                            } else {
+                                character.addDataField(
+                                    layout.getChildAt(i)
+                                        .findViewById<TextView>(R.id.constructor_field_title).text.toString(),
+                                    layout.getChildAt(i)
+                                        .findViewById<TextView>(R.id.constructor_field_data).text.toString()
+                                )
+                            }
                         }
-                    })
-                    animator.start()
+                    }
+
+                    character.setAvatar((findViewById<ShapeableImageView>(R.id.constructor_avatar).drawable as BitmapDrawable).bitmap)
+
+                    val message = Message()
+                    message.setUserId(UserData.ID)
+                    message.setRequestType("character")
+                    message.setRequestMode("add")
+                    message.setData(character.toString())
+
+                    network?.sendMsg(message)
+
+                    Thread {
+                        while (!characterAdded);
+
+                        runOnUiThread {
+                            character.setID(characterID)
+                            UserData.CHARACTERS.add(character)
+
+                            val elem =
+                                LayoutInflater.from(this).inflate(R.layout.character, null) as LinearLayout
+                            elem.findViewById<ShapeableImageView>(R.id.character_avatar)
+                                .setImageBitmap(character.getAvatar())
+                            elem.findViewById<TextView>(R.id.character_name).text =
+                                character.getDataField(resources.getString(R.string.input_nickname_hint))
+
+
+                            val container = findViewById<LinearLayout>(R.id.characters_layout)
+                            container.removeView(findViewById(R.id.not_characters))
+                            container.addView(elem)
+
+                            characterAdded = false
+                            characterID = ""
+
+                            Database.addCharacter(character)
+                        }
+                    }.start()
                 }
+
+                val animator = ValueAnimator.ofFloat(1.0f, 0.0f)
+                animator.duration = 300
+                animator.addUpdateListener {
+                    constructor.scaleX = it.animatedValue as Float
+                    constructor.scaleY = it.animatedValue as Float
+                    darkening.alpha = it.animatedValue as Float / 2.0f
+                }
+                animator.start()
+
+                darkening.isClickable = false
             }
         }
     }
@@ -251,16 +366,17 @@ class AppActivity : Activity() {
             val elem = LayoutInflater.from(this).inflate(R.layout.character, null)
             val container = findViewById<LinearLayout>(R.id.user_profile_settings_characters_layout)
 
-            elem.findViewById<ImageView>(R.id.character_avatar).setImageBitmap(character.getAvatar())
-            elem.findViewById<TextView>(R.id.character_name).text = character.getName()
-            elem.findViewById<TextView>(R.id.character_data).text = "мужской пол, " + character.getRasa()
+            elem.findViewById<ImageView>(R.id.character_avatar)
+                .setImageBitmap(character.getAvatar())
+            elem.findViewById<TextView>(R.id.character_name).text = character.getDataField(resources.getString(R.string.input_nickname_hint))
 
             container.removeView(findViewById(R.id.user_profile_settings_characters_layout_empty))
             container.addView(elem)
         }
 
         findViewById<TextView>(R.id.user_profile_settings_account_exit).setOnClickListener {
-            val dialog = findViewById<RelativeLayout>(R.id.user_profile_settings_account_exit_dialog)
+            val dialog =
+                findViewById<RelativeLayout>(R.id.user_profile_settings_account_exit_dialog)
             val darkening = findViewById<View>(R.id.profile_settings_darkening)
             var animator = ValueAnimator.ofFloat(0.0f, 1.0f)
             dialog.visibility = View.VISIBLE
@@ -359,12 +475,14 @@ class AppActivity : Activity() {
             imm.showSoftInput(it, InputMethodManager.SHOW_IMPLICIT)
 
             findViewById<LinearLayout>(R.id.profile_settings_bg).setOnClickListener { v ->
-                updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+                updatedValueData =
+                    updateField(updatedValue, it.text?.toString().toString(), it, imm)
             }
 
             it.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+                    updatedValueData =
+                        updateField(updatedValue, it.text?.toString().toString(), it, imm)
 
                     return@setOnEditorActionListener true
                 }
@@ -398,12 +516,14 @@ class AppActivity : Activity() {
             imm.showSoftInput(it, InputMethodManager.SHOW_IMPLICIT)
 
             findViewById<LinearLayout>(R.id.profile_settings_bg).setOnClickListener { v ->
-                updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+                updatedValueData =
+                    updateField(updatedValue, it.text?.toString().toString(), it, imm)
             }
 
             it.setOnEditorActionListener { v, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    updatedValueData = updateField(updatedValue, it.text?.toString().toString(), it, imm)
+                    updatedValueData =
+                        updateField(updatedValue, it.text?.toString().toString(), it, imm)
 
                     return@setOnEditorActionListener true
                 }
@@ -421,9 +541,24 @@ class AppActivity : Activity() {
             intent.type = "image/*"
             startActivityForResult(intent, GET_USER_AVATAR)
         }
+
+        findViewById<TextView>(R.id.settings_user_id).setOnLongClickListener {
+            it as TextView
+
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("User ID", it.text.toString())
+            clipboard.setPrimaryClip(clip)
+
+            return@setOnLongClickListener true
+        }
     }
 
-    private fun updateField(fieldName: String, fieldData: String, it: EditText, imm: InputMethodManager): String {
+    private fun updateField(
+        fieldName: String,
+        fieldData: String,
+        it: EditText,
+        imm: InputMethodManager
+    ): String {
         if (fieldName == "nickname") {
             UserData.NICKNAME = fieldData
 
@@ -458,7 +593,7 @@ class AppActivity : Activity() {
         Menu.setMenuLayout(findViewById(R.id.app_menu_layout))
         Menu.setDarkening(findViewById(R.id.darkening))
 
-        Menu.setMenuCallback(object: Menu.MenuCallback() {
+        Menu.setMenuCallback(object : Menu.MenuCallback() {
             override fun onMenuButtonPressed(id: Int) {
                 if (id == R.id.app_menu_characters_btn) openedLayout = CHARACTERS_LAYOUT
                 if (id == R.id.app_menu_worlds_btn) openedLayout = WORLDS_LAYOUT
