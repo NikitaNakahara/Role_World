@@ -11,4 +11,6 @@ object UserData {
     var AVATAR: Bitmap? = null
     var CHARACTERS = ArrayList<Character>()
     var WORLDS = ArrayList<World>()
+
+    var authorized = false
 }

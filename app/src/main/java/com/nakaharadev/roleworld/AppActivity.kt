@@ -48,14 +48,11 @@ class AppActivity : Activity() {
 
     private var openedLayout = WORLDS_LAYOUT
 
-    private var authorized = false
-    private var characterAdded = false
-    private var characterID = ""
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         network = Network()
+        /*
         network?.setNetworkCallback(object : Network.NetworkCallback {
             override fun onConnected() {}
 
@@ -72,7 +69,7 @@ class AppActivity : Activity() {
                     }
                 }
             }
-        })
+        })*/
         network?.run()
 
         Database.init(this)
@@ -117,9 +114,9 @@ class AppActivity : Activity() {
 
         msg.setData(msgData)
 
-        network?.sendMsg(msg)
-
-
+        network?.sendMessageAndAddCallback(msg, "auth") {
+            UserData.authorized = true
+        }
     }
 
     private fun initMainAppView() {
@@ -288,13 +285,9 @@ class AppActivity : Activity() {
                     message.setRequestMode("add")
                     message.setData(character.toString())
 
-                    network?.sendMsg(message)
-
-                    Thread {
-                        while (!characterAdded);
-
+                    network?.sendMessageAndAddCallback(message, "add_character") {
                         runOnUiThread {
-                            character.setID(characterID)
+                            character.setID(message.getUserId())
                             UserData.CHARACTERS.add(character)
 
                             val elem =
@@ -309,12 +302,9 @@ class AppActivity : Activity() {
                             container.removeView(findViewById(R.id.not_characters))
                             container.addView(elem)
 
-                            characterAdded = false
-                            characterID = ""
-
                             Database.addCharacter(character)
                         }
-                    }.start()
+                    }
                 }
 
                 val animator = ValueAnimator.ofFloat(1.0f, 0.0f)

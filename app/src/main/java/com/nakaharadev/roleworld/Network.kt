@@ -2,6 +2,7 @@ package com.nakaharadev.roleworld
 
 import android.util.Log
 import android.widget.Toast
+import org.json.JSONObject
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -91,13 +92,17 @@ class Network {
         messageQueueController.runControllerLoop()
     }
 
-    public fun addGetMessageCallback(requestType: String, requestMode: String, callback: (Message) -> Unit) {
+    public fun addGetMessageCallback(request: String, callback: (Message) -> Unit) {
         val data = GetMessageCallbackData()
-        data.type = requestType
-        data.mode = requestMode
+        data.request = request
         data.callback = callback
 
         getCallbacksList.add(data)
+    }
+
+    public fun sendMessageAndAddCallback(message: Message, request: String, callback: (Message) -> Unit) {
+        sendMsg(message)
+        addGetMessageCallback(request, callback)
     }
 
     public fun setNetworkCallback(callback: NetworkCallback) {
@@ -134,7 +139,7 @@ class Network {
                         }
 
                         for (callbackData: GetMessageCallbackData in getCallbacksList) {
-                            if (callbackData.type == msgObject.getRequestType() && callbackData.mode == msgObject.getRequestMode()) {
+                            if (callbackData.request == JSONObject(msgObject.getData()).getString("request")) {
                                 callbackData.callback!!(msgObject)
                             }
                         }
@@ -196,8 +201,7 @@ class Network {
     }
 
     private class GetMessageCallbackData {
-        public var type = ""
-        public var mode = ""
+        public var request = ""
         public var callback: ((Message) -> Unit)? = null
     }
 }
