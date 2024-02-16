@@ -10,7 +10,7 @@ import java.net.Socket
 
 
 class Network {
-    private val HOST = "192.168.0.114"
+    private val HOST = "192.168.1.33"
     private val PORT = 4035
 
     private var socket: Socket? = null

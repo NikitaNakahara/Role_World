@@ -52,24 +52,12 @@ class AppActivity : Activity() {
         super.onCreate(savedInstanceState)
 
         network = Network()
-        /*
+
         network?.setNetworkCallback(object : Network.NetworkCallback {
             override fun onConnected() {}
 
-            override fun onGetMessage(msg: Message) {
-                val json = JSONObject(msg.toString())
-
-                if (JSONObject(json.getString("data"))["state"] as String == "success") {
-                    if (JSONObject(json.getString("data"))["request"] as String == "add_character") {
-                        characterAdded = true
-                        characterID = json["id"] as String
-                    }
-                    if (json["id"] as String == UserData.ID) {
-                        authorized = true
-                    }
-                }
-            }
-        })*/
+            override fun onGetMessage(msg: Message) {}
+        })
         network?.run()
 
         Database.init(this)
@@ -130,9 +118,11 @@ class AppActivity : Activity() {
 
         initMenu()
 
-        val characters = Database.getAllCharacters()
-        for (character in characters) {
-            UserData.CHARACTERS.add(character)
+        val characters = Database.getAllCharacters(isInit = true)
+        if (characters != null) {
+            for (character in characters) {
+                UserData.CHARACTERS.add(character)
+            }
         }
 
         for (character in UserData.CHARACTERS) {

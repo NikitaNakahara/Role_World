@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
@@ -133,7 +134,11 @@ class FirstStartActivity : Activity() {
                             UserData.ID = responseMsg?.getUserId().toString()
                             if (mode == AuthController.SIGN_IN) {
                                 UserData.NICKNAME = JSONObject(responseMsg?.getData().toString())["nickname"] as String
-                                UserData.AVATAR = stringToBitmap(JSONObject(responseMsg?.getData().toString())["avatar"] as String)
+                                try {
+                                    UserData.AVATAR = stringToBitmap(JSONObject(responseMsg?.getData().toString())["avatar"] as String)
+                                } catch (e: JSONException) {
+                                    e.printStackTrace()
+                                }
                             } else {
                                 UserData.NICKNAME = data["nickname"] as String
                             }

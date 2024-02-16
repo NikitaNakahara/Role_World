@@ -24,11 +24,13 @@ object Database {
         database?.addCharacter(character)
     }
 
-    fun getAllCharacters(): ArrayList<Character> {
-        return database!!.getAllCharacters()
+    fun getAllCharacters(isInit: Boolean): ArrayList<Character>? {
+        return database!!.getAllCharacters(isInit)
     }
 
     private class MySQLiteDatabase : SQLiteOpenHelper {
+        private var initialized: Boolean = false
+
         constructor(
             context: Context?
         ) : super(context, "database.db", null, DATABASE_VERSION)
@@ -46,7 +48,8 @@ object Database {
             db.execSQL("INSERT INTO characters (_id, dataArray, avatar) VALUES ('" + character.getID() + "', '" + fields.toString() + "', '" + character.getAvatarAsString() + "');")
         }
 
-        fun getAllCharacters(): ArrayList<Character> {
+        fun getAllCharacters(isInit: Boolean): ArrayList<Character>? {
+            if (isInit) if (initialized) return null
             val list = ArrayList<Character>()
 
             val cursor =
@@ -86,6 +89,8 @@ object Database {
             }
 
             cursor.close()
+
+            if (isInit) initialized = true
 
             return list
         }
