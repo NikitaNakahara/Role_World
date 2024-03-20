@@ -9,6 +9,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
@@ -29,11 +30,15 @@ import android.widget.TextView
 import android.widget.Toast
 import android.widget.ViewFlipper
 import com.google.android.material.imageview.ShapeableImageView
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.lang.reflect.InvocationTargetException
 import java.util.Base64
 
 
@@ -51,10 +56,66 @@ class AppActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val file = File(filesDir.path + "${filesDir.path}/characters.json")
+        if (file.exists()) {
+            CharactersOfflineBuffer.load(DataInputStream(FileInputStream(file)).readUTF())
+
+            for (elem in CharactersOfflineBuffer.getAll()) {
+                val image = File("${filesDir.path}/${elem.getDataField(elem.getTitles()[0])}_avatar.png")
+                val bmOptions = BitmapFactory.Options()
+                val avatar = BitmapFactory.decodeFile(image.absolutePath, bmOptions)
+                elem.setAvatar(avatar)
+            }
+        }
+
+        Toast.makeText(this, CharactersOfflineBuffer.toString(), Toast.LENGTH_SHORT).show()
+
         network = Network()
 
         network?.setNetworkCallback(object : Network.NetworkCallback {
-            override fun onConnected() {}
+            override fun onConnected() {
+                val characters = CharactersOfflineBuffer.getAll()
+
+                for (elem in characters) {
+                    val message = Message()
+                    message.setUserId(UserData.ID)
+                    message.setRequestType("character")
+                    message.setRequestMode("add")
+                    message.setData(elem.toString())
+                    network?.sendMessageAndAddCallback(message, "add_character") {
+                        runOnUiThread {
+                            elem.setID(message.getUserId())
+                            UserData.CHARACTERS.add(elem)
+
+                            File("${filesDir.path}/${elem.getDataField(elem.getTitles()[0])}_avatar.png").delete()
+
+                            findViewById<LinearLayout>(R.id.characters_layout).removeAllViews()
+
+                            for (character in UserData.CHARACTERS) {
+                                val element = LayoutInflater.from(this@AppActivity)
+                                    .inflate(R.layout.character, null)
+                                val container = findViewById<LinearLayout>(R.id.characters_layout)
+
+                                element.findViewById<ShapeableImageView>(R.id.character_avatar)
+                                    .setImageBitmap(character.getAvatar())
+                                element.findViewById<TextView>(R.id.character_name).text =
+                                    character.getDataField(resources.getString(R.string.input_nickname_hint))
+
+                                container.removeView(findViewById(R.id.not_characters))
+                                container.addView(element)
+                            }
+
+                            Database.addCharacter(elem)
+                        }
+
+                        CharactersOfflineBuffer.remove(elem)
+
+                        if (CharactersOfflineBuffer.isEmpty()) {
+                            File("${filesDir.path}/characters.json").delete()
+                        }
+                    }
+                }
+            }
 
             override fun onGetMessage(msg: Message) {}
         })
@@ -65,6 +126,23 @@ class AppActivity : Activity() {
         authUser()
 
         initMainAppView()
+    }
+
+    override fun onStop() {
+        if (!CharactersOfflineBuffer.isEmpty()) {
+            val file = File(filesDir.path + "/characters.json")
+            if (!file.exists()) file.createNewFile()
+
+            val output = DataOutputStream(FileOutputStream(file))
+            output.writeUTF(CharactersOfflineBuffer.toString())
+            output.flush()
+
+            for (elem in CharactersOfflineBuffer.getAll()) {
+                saveAvatarToFile("/${elem.getDataField(elem.getTitles()[0])}_avatar.png", elem.getAvatar()!!)
+            }
+        }
+
+        super.onStop()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -104,6 +182,8 @@ class AppActivity : Activity() {
 
         network?.sendMessageAndAddCallback(msg, "auth") {
             UserData.authorized = true
+
+            Log.i("Characters", msg.getData())
         }
     }
 
@@ -134,6 +214,21 @@ class AppActivity : Activity() {
             elem.findViewById<TextView>(R.id.character_name).text =
                 character.getDataField(resources.getString(R.string.input_nickname_hint))
 
+            container.removeView(findViewById(R.id.not_characters))
+            container.addView(elem)
+        }
+
+        for (character in CharactersOfflineBuffer.getAll()) {
+            val elem =
+                LayoutInflater.from(this)
+                    .inflate(R.layout.offline_character, null) as RelativeLayout
+            elem.findViewById<ShapeableImageView>(R.id.character_avatar)
+                .setImageBitmap(character.getAvatar())
+            elem.findViewById<TextView>(R.id.character_name).text =
+                character.getDataField(resources.getString(R.string.input_nickname_hint))
+
+
+            val container = findViewById<LinearLayout>(R.id.characters_layout)
             container.removeView(findViewById(R.id.not_characters))
             container.addView(elem)
         }
@@ -269,31 +364,49 @@ class AppActivity : Activity() {
 
                     character.setAvatar((findViewById<ShapeableImageView>(R.id.constructor_avatar).drawable as BitmapDrawable).bitmap)
 
-                    val message = Message()
-                    message.setUserId(UserData.ID)
-                    message.setRequestType("character")
-                    message.setRequestMode("add")
-                    message.setData(character.toString())
+                    if (network?.isConnected() == true) {
+                        val message = Message()
+                        message.setUserId(UserData.ID)
+                        message.setRequestType("character")
+                        message.setRequestMode("add")
+                        message.setData(character.toString())
 
-                    network?.sendMessageAndAddCallback(message, "add_character") {
-                        runOnUiThread {
-                            character.setID(message.getUserId())
-                            UserData.CHARACTERS.add(character)
+                        network?.sendMessageAndAddCallback(message, "add_character") {
+                            runOnUiThread {
+                                character.setID(message.getUserId())
+                                UserData.CHARACTERS.add(character)
 
-                            val elem =
-                                LayoutInflater.from(this).inflate(R.layout.character, null) as LinearLayout
-                            elem.findViewById<ShapeableImageView>(R.id.character_avatar)
-                                .setImageBitmap(character.getAvatar())
-                            elem.findViewById<TextView>(R.id.character_name).text =
-                                character.getDataField(resources.getString(R.string.input_nickname_hint))
+                                val elem =
+                                    LayoutInflater.from(this)
+                                        .inflate(R.layout.character, null) as LinearLayout
+                                elem.findViewById<ShapeableImageView>(R.id.character_avatar)
+                                    .setImageBitmap(character.getAvatar())
+                                elem.findViewById<TextView>(R.id.character_name).text =
+                                    character.getDataField(resources.getString(R.string.input_nickname_hint))
 
 
-                            val container = findViewById<LinearLayout>(R.id.characters_layout)
-                            container.removeView(findViewById(R.id.not_characters))
-                            container.addView(elem)
+                                val container = findViewById<LinearLayout>(R.id.characters_layout)
+                                container.removeView(findViewById(R.id.not_characters))
+                                container.addView(elem)
 
-                            Database.addCharacter(character)
+                                Database.addCharacter(character)
+                            }
                         }
+                    } else {
+                        CharactersOfflineBuffer.add(character)
+
+                        val elem =
+                            LayoutInflater.from(this)
+                                .inflate(R.layout.offline_character, null) as RelativeLayout
+                        elem.findViewById<ShapeableImageView>(R.id.character_avatar)
+                            .setImageBitmap(character.getAvatar())
+                        elem.findViewById<TextView>(R.id.character_name).text =
+                            character.getDataField(resources.getString(R.string.input_nickname_hint))
+
+
+                        val container = findViewById<LinearLayout>(R.id.characters_layout)
+                        container.removeView(findViewById(R.id.not_characters))
+                        container.addView(elem)
                     }
                 }
 

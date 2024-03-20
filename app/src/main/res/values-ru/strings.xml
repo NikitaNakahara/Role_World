@@ -29,4 +29,5 @@
     <string name="character">персонаж</string>
     <string name="field_name">название</string>
     <string name="field_data">инфо</string>
+    <string name="offline">оффлайн</string>
 </resources>

@@ -92,6 +92,10 @@ class Network {
         messageQueueController.runControllerLoop()
     }
 
+    public fun isConnected(): Boolean {
+        return this.isConnected
+    }
+
     public fun addGetMessageCallback(request: String, callback: (Message) -> Unit) {
         val data = GetMessageCallbackData()
         data.request = request

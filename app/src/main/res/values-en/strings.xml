@@ -29,4 +29,5 @@
     <string name="character">character</string>
     <string name="field_name">field name</string>
     <string name="field_data">data</string>
+    <string name="offline">offline</string>
 </resources>

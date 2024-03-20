@@ -1,12 +1,9 @@
 package com.nakaharadev.roleworld
 
 import android.graphics.Bitmap
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.util.ArrayList
 import java.util.Base64
-import java.util.HashMap
 
 class Character {
     private val fields = HashMap<String, String>()
@@ -15,6 +12,22 @@ class Character {
     private val titles = ArrayList<String>()
 
     private var id: String = ""
+
+    constructor()
+    constructor(data: String) : this(JSONObject(data))
+
+    constructor(data: JSONObject) {
+        val characterData = data.getString("data")
+
+        val arrayString: String = characterData.substring(1, characterData.length - 1)
+        val array = arrayString.split(", ")
+
+        var i = 0
+        while (i < array.size - 1) {
+            addDataField(array[i], array[i + 1])
+            i += 2
+        }
+    }
 
     fun addDataField(title: String, data: String) {
         titles.add(title)
@@ -41,7 +54,7 @@ class Character {
 
     fun getTitles(): ArrayList<String> { return titles }
 
-    override fun toString(): String {
+    fun toJSON(): JSONObject {
         val json = JSONObject()
 
         val array = ArrayList<String?>()
@@ -49,14 +62,45 @@ class Character {
             array.add(titles[i])
             array.add(fields[titles[i]])
         }
+
         json.put("data", array.toString())
 
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        avatar?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
+        return json
+    }
 
-        json.put("avatar", Base64.getEncoder().encodeToString(byteArray))
+    override fun toString(): String {
+        return toString(true)
+    }
 
-        return json.toString();
+    override fun equals(other: Any?): Boolean {
+        if (other is Character) {
+            val otherTitles = other.titles
+
+            if (titles.size != otherTitles.size) return false
+
+            for (i in 0 until titles.size) {
+                if (fields[titles[i]]?.equals(other.getDataField(otherTitles[i])) == false) {
+                    return false
+                }
+            }
+
+            return true
+        }
+
+        return false
+    }
+
+    fun toString(withAvatar: Boolean): String {
+        val json = toJSON()
+
+        if (withAvatar) {
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            avatar?.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+
+            json.put("avatar", Base64.getEncoder().encodeToString(byteArray))
+        }
+
+        return json.toString()
     }
 }
